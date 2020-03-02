@@ -1,0 +1,132 @@
+# Project: FarsiteCL
+# Makefile created by Dev-C++ 4.9.9.2
+
+CPP  = g++.exe -D__DEBUG__
+CC   = gcc.exe -D__DEBUG__
+WINDRES = windres.exe
+RES  = 
+OBJ  = batch.o burnupw.o crossthread.o dbfopen.o farsite4.o fcopy.o fsairatk.o fsglbvar.o fsxpfront.o fsxw.o fsxwatm.o fsxwattk.o fsxwbar.o fsxwburn4.o fsxwcrwn.o fsxwenvt2.o fsxwfms2.o fsxwfotp.o fsxwignt.o fsxwinpt.o fsxwmech.o fsxwrast.o fsxwshap.o fsxwspot.o fsxwutil.o fsxwvect.o globals.o gridthem.o newclip.o newfms.o PerimeterPoint.o Point.o portablestrings.o rand2.o shpopen.o $(RES)
+LINKOBJ  = batch.o burnupw.o crossthread.o dbfopen.o farsite4.o fcopy.o fsairatk.o fsglbvar.o fsxpfront.o fsxw.o fsxwatm.o fsxwattk.o fsxwbar.o fsxwburn4.o fsxwcrwn.o fsxwenvt2.o fsxwfms2.o fsxwfotp.o fsxwignt.o fsxwinpt.o fsxwmech.o fsxwrast.o fsxwshap.o fsxwspot.o fsxwutil.o fsxwvect.o globals.o gridthem.o newclip.o newfms.o PerimeterPoint.o Point.o portablestrings.o rand2.o shpopen.o $(RES)
+LIBS =   -g3 
+INCS = 
+CXXINCS = 
+BIN  = FarsiteCL.exe
+CXXFLAGS = $(CXXINCS) -D DEV_C   -D DEV_C -fexpensive-optimizations -O1 -g3
+CFLAGS = $(INCS)   -D DEV_C -fexpensive-optimizations -O1 -g3
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before FarsiteCL.exe all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o "FarsiteCL.exe" $(LIBS)
+
+batch.o: batch.cpp
+	$(CPP) -c batch.cpp -o batch.o $(CXXFLAGS)
+
+burnupw.o: burnupw.cpp
+	$(CPP) -c burnupw.cpp -o burnupw.o $(CXXFLAGS)
+
+crossthread.o: crossthread.cpp
+	$(CPP) -c crossthread.cpp -o crossthread.o $(CXXFLAGS)
+
+dbfopen.o: dbfopen.cpp
+	$(CPP) -c dbfopen.cpp -o dbfopen.o $(CXXFLAGS)
+
+farsite4.o: farsite4.cpp
+	$(CPP) -c farsite4.cpp -o farsite4.o $(CXXFLAGS)
+
+fcopy.o: fcopy.cpp
+	$(CPP) -c fcopy.cpp -o fcopy.o $(CXXFLAGS)
+
+fsairatk.o: fsairatk.cpp
+	$(CPP) -c fsairatk.cpp -o fsairatk.o $(CXXFLAGS)
+
+fsglbvar.o: fsglbvar.cpp
+	$(CPP) -c fsglbvar.cpp -o fsglbvar.o $(CXXFLAGS)
+
+fsxpfront.o: fsxpfront.cpp
+	$(CPP) -c fsxpfront.cpp -o fsxpfront.o $(CXXFLAGS)
+
+fsxw.o: fsxw.cpp
+	$(CPP) -c fsxw.cpp -o fsxw.o $(CXXFLAGS)
+
+fsxwatm.o: fsxwatm.cpp
+	$(CPP) -c fsxwatm.cpp -o fsxwatm.o $(CXXFLAGS)
+
+fsxwattk.o: fsxwattk.cpp
+	$(CPP) -c fsxwattk.cpp -o fsxwattk.o $(CXXFLAGS)
+
+fsxwbar.o: fsxwbar.cpp
+	$(CPP) -c fsxwbar.cpp -o fsxwbar.o $(CXXFLAGS)
+
+fsxwburn4.o: fsxwburn4.cpp
+	$(CPP) -c fsxwburn4.cpp -o fsxwburn4.o $(CXXFLAGS)
+
+fsxwcrwn.o: fsxwcrwn.cpp
+	$(CPP) -c fsxwcrwn.cpp -o fsxwcrwn.o $(CXXFLAGS)
+
+fsxwenvt2.o: fsxwenvt2.cpp
+	$(CPP) -c fsxwenvt2.cpp -o fsxwenvt2.o $(CXXFLAGS)
+
+fsxwfms2.o: fsxwfms2.cpp
+	$(CPP) -c fsxwfms2.cpp -o fsxwfms2.o $(CXXFLAGS)
+
+fsxwfotp.o: fsxwfotp.cpp
+	$(CPP) -c fsxwfotp.cpp -o fsxwfotp.o $(CXXFLAGS)
+
+fsxwignt.o: fsxwignt.cpp
+	$(CPP) -c fsxwignt.cpp -o fsxwignt.o $(CXXFLAGS)
+
+fsxwinpt.o: fsxwinpt.cpp
+	$(CPP) -c fsxwinpt.cpp -o fsxwinpt.o $(CXXFLAGS)
+
+fsxwmech.o: fsxwmech.cpp
+	$(CPP) -c fsxwmech.cpp -o fsxwmech.o $(CXXFLAGS)
+
+fsxwrast.o: fsxwrast.cpp
+	$(CPP) -c fsxwrast.cpp -o fsxwrast.o $(CXXFLAGS)
+
+fsxwshap.o: fsxwshap.cpp
+	$(CPP) -c fsxwshap.cpp -o fsxwshap.o $(CXXFLAGS)
+
+fsxwspot.o: fsxwspot.cpp
+	$(CPP) -c fsxwspot.cpp -o fsxwspot.o $(CXXFLAGS)
+
+fsxwutil.o: fsxwutil.cpp
+	$(CPP) -c fsxwutil.cpp -o fsxwutil.o $(CXXFLAGS)
+
+fsxwvect.o: fsxwvect.cpp
+	$(CPP) -c fsxwvect.cpp -o fsxwvect.o $(CXXFLAGS)
+
+globals.o: globals.cpp
+	$(CPP) -c globals.cpp -o globals.o $(CXXFLAGS)
+
+gridthem.o: gridthem.cpp
+	$(CPP) -c gridthem.cpp -o gridthem.o $(CXXFLAGS)
+
+newclip.o: newclip.cpp
+	$(CPP) -c newclip.cpp -o newclip.o $(CXXFLAGS)
+
+newfms.o: newfms.cpp
+	$(CPP) -c newfms.cpp -o newfms.o $(CXXFLAGS)
+
+PerimeterPoint.o: PerimeterPoint.cpp
+	$(CPP) -c PerimeterPoint.cpp -o PerimeterPoint.o $(CXXFLAGS)
+
+Point.o: Point.cpp
+	$(CPP) -c Point.cpp -o Point.o $(CXXFLAGS)
+
+portablestrings.o: portablestrings.cpp
+	$(CPP) -c portablestrings.cpp -o portablestrings.o $(CXXFLAGS)
+
+rand2.o: rand2.cpp
+	$(CPP) -c rand2.cpp -o rand2.o $(CXXFLAGS)
+
+shpopen.o: shpopen.cpp
+	$(CPP) -c shpopen.cpp -o shpopen.o $(CXXFLAGS)
