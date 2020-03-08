@@ -11,6 +11,7 @@
 #include"portablestrings.h"
 #include"fsxwattk.h"
 #include"fsairatk.h"
+#include"LCPAnalyzer.h"
 
 using namespace std;
 
@@ -120,7 +121,14 @@ static long OldFilePosition = 0;
 static headdata2 Header2;
 static headdata Header;
 static oldheaddata OldHeader;
-static size_t headsize = sizeof( Header );
+
+//202003041717:
+//Now setting headsize=0 to indicate it should be set from within
+//either ReadHeader() or CellData(), using results from
+//LCPAnalyzer.
+//static size_t headsize = sizeof( Header );
+static size_t headsize = 0;
+
 static FILE* landfile = 0;
 static char LandFName[256] = "";
 static StationGrid grid;
@@ -2463,6 +2471,13 @@ fread( &Header.Description, sizeof(char), 512, landfile ); //AAA
             "## North: %15.6lf                          ##\n",
             Header.loeast, Header.hieast, Header.lonorth, Header.hinorth );
 
+  //If headsize has not been set yet, set it using LCPAnalyzer results.
+  if( headsize == 0 ) {
+    LCPAnalyzer LA( LandFName );
+    LA.Analyze();
+    headsize = LA.GetHeaderSize();
+  }
+
   if( Verbose > CallLevel ) {
     printf( "%*sfsglbvar:ReadHeader:3a\n", CallLevel, "" );
     printf("%*s                        headsize=%ld\n",
@@ -2589,8 +2604,12 @@ void GetCellDataFromMemory( long posit, celldata& cell, crowndata& cfuel,
 
   memcpy( ldata, &landscape[posit * NumVals], NumVals * sizeof(short) );
 
-  if( Verbose > CallLevel )
-    printf( "%*sfsglbvar:GetCellDataFromMemory:2\n", CallLevel, "" );
+  if( Verbose > CallLevel ) {
+    printf( "%*sfsglbvar:GetCellDataFromMemory:2 ", CallLevel, "" );
+    for( int i = 0; i < NumVals; i++ )
+      printf( "%02x ", ldata[i] );
+    printf( "\n" );
+  }
 
   switch( NumVals ) {
     case 5:
@@ -2624,7 +2643,15 @@ celldata CellData( double east, double north, celldata& cell,
 { //CellData
   CallLevel++;
   if( Verbose > CallLevel )
-    printf( "%*sfsglbvar:CellData:1\n", CallLevel, "" );
+    printf( "%*sfsglbvar:CellData:1  headsize=%ld\n",
+            CallLevel, "", headsize );
+ 
+  //If headsize has not been set yet, set it using LCPAnalyzer results.
+  if( headsize == 0 ) {
+    LCPAnalyzer LA( LandFName );
+    LA.Analyze();
+    headsize = LA.GetHeaderSize();
+  }
 
   long Position;
 
@@ -2775,7 +2802,8 @@ long GetCellPosition( double east, double north )
   CallLevel--;
 
   if( Verbose > CallLevel )
-    printf( "%*sfsglbvar:GetCellPosition:3\n", CallLevel, "" );
+    printf( "%*sfsglbvar:GetCellPosition:3 posit=%ld\n",
+            CallLevel, "", posit );
   return posit;
 } //GetCellPosition
 
