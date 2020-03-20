@@ -1722,16 +1722,39 @@ bool Intersections::CrossCompare( long *CurrentFire, long NextFire )
                   CallLevel, "", 0, GetNumPoints(0) );
 
         if( CheckPostFrontal(GETVAL) && GetNumPoints(*CurrentFire) > 0 ) {
+          if( Verbose >= CallLevel )
+            printf( "%*sfsxwutil:Intersections::CrossCompare:4b3a "
+                    "\n", CallLevel, "" );
+
           NewFires2 = GetNewFires();
           if( (PostFires = new long[NewFires2 - NewFires1 + 1]) != NULL ) {
+            if( Verbose >= CallLevel )
+              printf( "%*sfsxwutil:Intersections::CrossCompare:4b3a1 "
+                      "\n", CallLevel, "" );
+
             PostFires[0] = *CurrentFire;
             for( i = 1; i < (NewFires2 - NewFires1 + 1); i++ )
               PostFires[i] = NewFires1 + i - 1;
+
+            if( Verbose >= CallLevel )
+              printf( "%*sfsxwutil:Intersections::CrossCompare:4b3a2 "
+                      "\n", CallLevel, "" );
+
             post.CorrectFireRing( numcross, intersect, interpoint, PostFires,
                                   NewFires2 - NewFires1 + 1, PriorNumPoints );
+
+            if( Verbose >= CallLevel )
+              printf( "%*sfsxwutil:Intersections::CrossCompare:4b3a3 "
+                      "\n", CallLevel, "" );
+
             delete[] PostFires;
           }
         }
+
+        if( Verbose >= CallLevel )
+          printf( "%*sfsxwutil:Intersections::CrossCompare:4b4 "
+                  "numpts[%d]=%ld\n",
+                  CallLevel, "", 0, GetNumPoints(0) );
 
         if( GetNumPoints(*CurrentFire) > 0 ) { // SET TO 0
           rediscretize( CurrentFire, false );  //REMOVE IF USING OLD ALGORITHM
