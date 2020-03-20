@@ -22,30 +22,53 @@ OutputFile::~OutputFile()
 
 void OutputFile::SelectOutputs(long OutputFormat)
 {
+  CallLevel++;
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::SelectOutputs:1\n", CallLevel, "" );
+
   if( OutputFormat == 1 || OutputFormat == 5 ) WriteRastMemFiles();
   else if( OutputFormat > 1 ) {
-		FileOutput = OutputFormat;	// specify vector file for optional
-		OptionalOutput(false);
-	}
-}
+    FileOutput = OutputFormat;	// specify vector file for optional
+    OptionalOutput(false);
+  }
 
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::SelectOutputs:2\n", CallLevel, "" );
+
+  CallLevel--;
+}
 
 
 void OutputFile::SelectMemOutputs(long OutputFormat)
 {
+  CallLevel++;
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::SelectMemOutputs:1\n", CallLevel, "" );
+
   setHeaderType(OutputFormat);     //AAA In FromG5 ver only
 
   if( OutputFormat == 1 || OutputFormat == 5 ) WriteRastMemFiles();
   else if( OutputFormat > 1 ) {
-		FileOutput = OutputFormat;	// specify vector file for optional
-		OptionalOutput(true);
-	}
+    FileOutput = OutputFormat;  // specify vector file for optional
+    OptionalOutput(true);
+  }
+
   //AAANumRastData = 0;                                    //AAA In RAS! ver only
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::SelectMemOutputs:2\n", CallLevel, "" );
+
+  CallLevel--;
 }
 
 
 void OutputFile::WriteRastMemFiles()
 {
+  CallLevel++;
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::WriteRastMemFiles:1\n", CallLevel, "" );
 //AAA JAS! ver AAA	RastMemFile(RAST_ARRIVALTIME);
 //AAA JAS! ver AAA	if (GetFileOutputOptions(RAST_FIREINTENSITY))
 //AAA JAS! ver AAA		RastMemFile(RAST_FIREINTENSITY);
@@ -62,41 +85,35 @@ void OutputFile::WriteRastMemFiles()
 //AAA JAS! ver AAA	if (GetFileOutputOptions(RAST_FIREDIRECTION))
 //AAA JAS! ver AAA		RastMemFile(RAST_FIREDIRECTION);
 
-
-
   //AAA FromG5 ver below
+  WriteFile(RAST_ARRIVALTIME);
 
-	WriteFile(RAST_ARRIVALTIME);
+  if( GetFileOutputOptions(RAST_FIREINTENSITY) )
+    WriteFile(RAST_FIREINTENSITY);
 
-	if (GetFileOutputOptions(RAST_FIREINTENSITY))
+  if( GetFileOutputOptions(RAST_FLAMELENGTH) )
+    WriteFile(RAST_FLAMELENGTH);
 
-		WriteFile(RAST_FIREINTENSITY);
+  if( GetFileOutputOptions(RAST_SPREADRATE) )
+    WriteFile(RAST_SPREADRATE);
 
-	if (GetFileOutputOptions(RAST_FLAMELENGTH))
+  if( GetFileOutputOptions(RAST_HEATPERAREA) )
+    WriteFile(RAST_HEATPERAREA);
 
-		WriteFile(RAST_FLAMELENGTH);
+  if( GetFileOutputOptions(RAST_REACTIONINTENSITY) )
+    WriteFile(RAST_REACTIONINTENSITY);
 
-	if (GetFileOutputOptions(RAST_SPREADRATE))
+  if( GetFileOutputOptions(RAST_CROWNFIRE) )
+    WriteFile(RAST_CROWNFIRE);
 
-		WriteFile(RAST_SPREADRATE);
-
-	if (GetFileOutputOptions(RAST_HEATPERAREA))
-
-		WriteFile(RAST_HEATPERAREA);
-
-	if (GetFileOutputOptions(RAST_REACTIONINTENSITY))
-
-		WriteFile(RAST_REACTIONINTENSITY);
-
-	if (GetFileOutputOptions(RAST_CROWNFIRE))
-
-		WriteFile(RAST_CROWNFIRE);
-
-	if (GetFileOutputOptions(RAST_FIREDIRECTION))
-
-		WriteFile(RAST_FIREDIRECTION);
-
+  if( GetFileOutputOptions(RAST_FIREDIRECTION) )
+    WriteFile(RAST_FIREDIRECTION);
   //AAA End FromG5 ver
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::WriteRastMemFiles:2\n", CallLevel, "" );
+
+  CallLevel--;
 }
 
 /*AAA JAS! ver  AAA
@@ -267,181 +284,113 @@ AAA*/
 
 
 //AAA FromG5 ver below
-
 bool OutputFile::RastMemFile(long Type)
-
 {
+  CallLevel++;
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::RastMemFile:1 numrows=%ld numcols=%ld\n",
+            CallLevel, "", numrows, numcols );
+
+  double OutDoubleData;
+  long OutLongData;
+
+  //Loop over all rows and all columns
+  for( long j=0; j < numrows; j++ ) { 
+    for( long i=0; i < numcols; i++ ) {  
+      //Check to see if this cell has raster data written to it.
+      coordinate testxy = std::make_pair(i,j) ; 
+      RasterMap::iterator data = rd.find(testxy); 
+
+      //If this cell has no data yet, just print a -1 
+      if( data == rd.end() ) {
+        //output -1 as either a float or a long.
+        if( Type == RAST_FIREINTENSITY ||
+            Type == RAST_HEATPERAREA ||
+            Type == RAST_REACTIONINTENSITY || 
+            Type == RAST_ARRIVALTIME ||
+            Type == RAST_FLAMELENGTH || 
+            Type == RAST_SPREADRATE ) 
+          fprintf(otpfile, "%09.3lf\n", -1.0);
+        else fprintf(otpfile, "%03ld\n", -1l) ; 
+
+        if( Verbose > CallLevel+1 ) printf( "_ " );
+      }
+      else {
+        if( Type != RAST_ARRIVALTIME ) {
+          if( (data->second).Write == false )
+            continue;
+        }
+        x = (data->second).x;
+        y = (data->second).y;
+        t = (data->second).Time;
+        f = (data->second).Fli;
+        r = (data->second).Ros;
+        rx = (data->second).Rcx;
+        d = (data->second).Dir;
+
+        switch( Type ) {
+          case RAST_ARRIVALTIME:
+            OutDoubleData = t;
+            break;
+
+          case RAST_FIREINTENSITY:
+            OutDoubleData = f / convf1;
+            break;
+
+          case RAST_FLAMELENGTH:
+            Calcs(FLAME_LENGTH);    // calculate flame length
+            OutDoubleData = l;
+            break;
+
+          case RAST_SPREADRATE:
+            OutDoubleData = r * convf2;
+            break;
+
+          case RAST_HEATPERAREA:
+            Calcs(HEAT_PER_AREA);   // calculate heat/unit area
+            OutDoubleData = h;
+            break;
+
+          case RAST_REACTIONINTENSITY:
+            Calcs(HEAT_PER_AREA);   // calculate heat/unit area
+            OutDoubleData = rx;
+            break;
+
+          case RAST_CROWNFIRE:
+            Calcs(CROWNFIRE);
+            OutLongData = c;
+            break;
+
+          case RAST_FIREDIRECTION:
+            OutLongData = d;
+            break;
+        }
+
+        if( Type == RAST_ARRIVALTIME ) {
+          fprintf(otpfile, "%09.3lf\n", OutDoubleData);
+          (data->second).Write = true;
+          if( Verbose > CallLevel+1 ) printf( "%lf ", OutDoubleData );
+        }
+        else if( Type == RAST_FIREINTENSITY ||
+                 Type == RAST_HEATPERAREA ||
+                 Type == RAST_REACTIONINTENSITY )
+          fprintf(otpfile, "%09.3lf\n", OutDoubleData);
+        else if( Type == RAST_FLAMELENGTH || Type == RAST_SPREADRATE )
+          fprintf(otpfile, "%05.2lf\n", OutDoubleData);
+        else
+          fprintf(otpfile, "%03ld\n", OutLongData);
+      }
+    } //End loop through cols
+    if( Verbose > CallLevel+1 ) printf( "\n" );
+  } //End loop through rows
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfotp:OutputFile::RastMemFile:2\n", CallLevel, "" );
 
-	double OutDoubleData;
+  CallLevel--;
 
-	long OutLongData;
-
-
-
-	// loop over all rows and all columns
-
-	for (long j=0; j < numrows; j++) { 
-
-		for (long i=0; i < numcols; i++) {  
-
-			
-
-			// check to see if this cell has raster data written to it.
-
-			coordinate testxy = std::make_pair(i,j) ; 
-
-			RasterMap::iterator data = rd.find(testxy) ; 
-
-			
-
-			// if this cell has no data yet, just print a -1 
-
-			if (data == rd.end()) {
-
-				// output -1 as either a float or a long.
-
-				if (Type == RAST_FIREINTENSITY ||
-
-				 	Type == RAST_HEATPERAREA ||
-
-					Type == RAST_REACTIONINTENSITY || 
-
-					Type == RAST_ARRIVALTIME ||
-
-				    Type == RAST_FLAMELENGTH || 
-
-				    Type == RAST_SPREADRATE) { 
-
-					fprintf(otpfile, "%09.3lf\n", -1.0);
-
-				} else { 
-
-					fprintf(otpfile, "%03ld\n", -1l) ; 
-
-				}
-
-			} else { 
-
-				if (Type != RAST_ARRIVALTIME)
-
-				{
-
-					if ((data->second).Write == false)
-
-						continue;
-
-				}
-
-				x = (data->second).x;
-
-				y = (data->second).y;
-
-				t = (data->second).Time;
-
-				f = (data->second).Fli;
-
-				r = (data->second).Ros;
-
-				rx = (data->second).Rcx;
-
-				d = (data->second).Dir;
-
-				switch (Type)
-
-				{
-
-				case RAST_ARRIVALTIME:
-
-					OutDoubleData = t;
-
-					break;
-
-				case RAST_FIREINTENSITY:
-
-					OutDoubleData = f / convf1;
-
-					break;
-
-				case RAST_FLAMELENGTH:
-
-					Calcs(FLAME_LENGTH);					// calculate flame length
-
-					OutDoubleData = l;
-
-					break;
-
-				case RAST_SPREADRATE:
-
-					OutDoubleData = r * convf2;
-
-					break;
-
-				case RAST_HEATPERAREA:
-
-					Calcs(HEAT_PER_AREA);   				  // calculate heat/unit area
-
-					OutDoubleData = h;
-
-					break;
-
-				case RAST_REACTIONINTENSITY:
-
-					Calcs(HEAT_PER_AREA);   				  // calculate heat/unit area
-
-					OutDoubleData = rx;
-
-					break;
-
-				case RAST_CROWNFIRE:
-
-					Calcs(CROWNFIRE);
-
-					OutLongData = c;
-
-					break;
-
-				case RAST_FIREDIRECTION:
-
-					OutLongData = d;
-
-					break;
-
-				}
-
-				if (Type == RAST_ARRIVALTIME)
-
-				{
-
-					fprintf(otpfile, "%09.3lf\n", OutDoubleData);
-
-					(data->second).Write = true;
-
-				} else if (Type == RAST_FIREINTENSITY ||
-
-					Type == RAST_HEATPERAREA ||
-
-					Type == RAST_REACTIONINTENSITY)
-
-					fprintf(otpfile, "%09.3lf\n", OutDoubleData);
-
-				else if (Type == RAST_FLAMELENGTH || Type == RAST_SPREADRATE)
-
-					fprintf(otpfile, "%05.2lf\n", OutDoubleData);
-
-				else
-
-					fprintf(otpfile, "%03ld\n", OutLongData);
-
-			}
-
-		}
-
-	}
-
-
-
-	return false;
-
+  return false;
 }
 
 //AAA End FromG5 ver
@@ -715,16 +664,20 @@ void OutputFile::WriteFile( long Type )
   CallLevel++;
 
   if( Verbose > CallLevel )
-    printf( "%*sfsxwfotp:OutputFile::WriteFile:1\n", CallLevel, "" );
+    printf( "%*sfsxwfotp:OutputFile::WriteFile:1 Type=%ld\n",
+            CallLevel, "", Type );
 
   GetRastRes( &xres, &yres );
+  if( Verbose > CallLevel ) {
+    printf( "%*sfsxwfotp:OutputFile::WriteFile:2 East=%lf West=%lf ",
+            CallLevel, "", East, West );
+    printf( "North=%lf South=%lf\n", North, South );
+  }
 
   numcols = (long) ( (East - West) / xres );
-
   numrows = (long) ( (North - South) / yres );
 
   memset( RasterCopy, 0x0, sizeof RasterCopy );
-
   strcpy( RasterCopy, GetRasterFileName(Type) );
 
   if( CheckCellResUnits() == 2 ) MetersToKm = 0.001;
@@ -767,6 +720,7 @@ void OutputFile::WriteFile( long Type )
       fprintf( otpfile, "%s     %ld\n", "rows:", numrows );
       fprintf( otpfile, "%s     %ld\n", "cols:", numcols );
       break;
+
     case 5:
       fprintf( otpfile, "%s %ld\n", "NCOLS", numcols );
       fprintf( otpfile, "%s %ld\n", "NROWS", numrows );
@@ -791,7 +745,7 @@ void OutputFile::WriteFile( long Type )
   fclose( otpfile );
 
   if( Verbose > CallLevel )
-    printf( "%*sfsxwfotp:OutputFile::WriteFile:2\n", CallLevel, "" );
+    printf( "%*sfsxwfotp:OutputFile::WriteFile:3\n", CallLevel, "" );
 
   CallLevel--;
 } //OutputFile::WriteFile
@@ -802,7 +756,7 @@ void OutputFile::GetRasterExtent()
 { //OutputFile::GetRasterExtent
   CallLevel++;
 
-  if( Verbose >= 8 )
+  if( Verbose >= 6 )
     printf( "%*sfsxwfotp:OutputFile::GetRasterExtent:1\n", CallLevel, "" );
 
   if( CanSetRasterResolution(GETVAL) == 0 ) {
@@ -811,7 +765,7 @@ void OutputFile::GetRasterExtent()
   }
 
   if( SetRasterExtentToViewport(GETVAL) ) {
-    if( Verbose >= 8 )
+    if( Verbose >= 6 )
       printf( "%*sfsxwfotp:OutputFile::GetRasterExtent:1a\n", CallLevel, "" );
     North = GetViewNorth();
     South = GetViewSouth();
@@ -819,7 +773,7 @@ void OutputFile::GetRasterExtent()
     West = GetViewWest();
   }
   else {
-    if( Verbose >= 8 )
+    if( Verbose >= 6 )
       printf( "%*sfsxwfotp:OutputFile::GetRasterExtent:1b\n", CallLevel, "" );
     North = GetHiNorth();
     South = GetLoNorth();
