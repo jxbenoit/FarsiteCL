@@ -8,8 +8,9 @@
 #include"fsxpfront.h"
 #include"fsglbvar.h"
 #include"burnupw.h"
+#include"globals.h"
 
-const double PI = acos(-1.0);
+//const double PI = acos(-1.0);
 //extern const double PI;
 
 //----------------------------------------------------------------------------
@@ -101,43 +102,12 @@ void GetLastRingStruct()
   }
 } //GetLastRingStruct
 
-
-void FreeAllFireRings()
-{ //FreeAllFireRings
-  long i, j;
-
-  CurRing = FirstRing;
-  for( i = 0; i < NumRingStructs; i++ ) {
-    if( CurRing != NULL ) {
-      for( j = 0; j < RINGS_PER_STRUCT; j++ ) {
-        if( CurRing->firering[j].perimpoints ) {
-          delete[] CurRing->firering[j].perimpoints;
-          if( CurRing->firering[j].NumPoints )
-            delete[] CurRing->firering[j].NumPoints;
-          if( CurRing->firering[j].mergepoints )
-            delete[] CurRing->firering[j].mergepoints;
-          CurRing->firering[j].perimpoints = 0;
-          CurRing->firering[j].NumPoints = 0;
-          CurRing->firering[j].mergepoints = 0;
-        }
-      }
-    }
-
-    NextRing = (RingStruct *) CurRing->next;
-    delete CurRing;
-    CurRing = NextRing;
-  }
-
-  NumRings = 0;
-  NumRingStructs = 0;
-  FirstRing = 0;
-  NextRing = 0;
-  CurRing = 0;
-} //FreeAllFireRings
-
-
 void FreeFireRing( long RingNum )
 { //FreeFireRing
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:FreeFireRing:1 \n", CallLevel, "" );
+
   long i, curplace, ThisRing;
   double Ring;
 
@@ -168,23 +138,51 @@ void FreeFireRing( long RingNum )
     }
     catch (...) { }
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:FreeFireRing:2 \n", CallLevel, "" );
+  CallLevel--;
 } //FreeFireRing
 
 
+//============================================================================
 FireRing* GetRing( long RingNum )
 { //GetRing
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:GetRing:1 RingNum=%ld\n", CallLevel, "", RingNum );
+
   long i, curplace, ThisRing;
   double Ring;
 
-  if (RingNum < 0) //original JAS!
+  if (RingNum < 0) {//original JAS!
   //if (RingNum <= 0)   //Modified JAS!
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:GetRing:1a\n", CallLevel, "" );
+    CallLevel--;
+
     return (FireRing *) NULL;
+  }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:GetRing:2\n", CallLevel, "" );
 
   modf( ((double) RingNum / (double) RINGS_PER_STRUCT), &Ring );
   ThisRing = (long) Ring;
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:GetRing:3\n", CallLevel, "" );
+
   curplace = RingNum - ThisRing * RINGS_PER_STRUCT;//-1;
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:GetRing:4\n", CallLevel, "" );
+
   CurRing->StructNum = 0;  //added JAS!
 	
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:GetRing:5\n", CallLevel, "" );
+
   if( CurRing->StructNum != ThisRing ) {
     CurRing = FirstRing;
     for( i = 0; i < ThisRing; i++ ) {
@@ -193,8 +191,19 @@ FireRing* GetRing( long RingNum )
     }
   }
  
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:GetRing:6\n", CallLevel, "" );
 
-  if( CurRing == NULL ) return NULL;
+  if( CurRing == NULL ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:GetRing:6a\n", CallLevel, "" );
+
+    return NULL;
+  }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:GetRing:7 curplace=%ld\n", CallLevel, "", curplace );
+  CallLevel--;
 
   return &CurRing->firering[curplace];
 } //GetRing
@@ -229,9 +238,25 @@ void CondenseRings( long RingNum )
   //Searches starting with RingNum for FireRings with no points. Then it
   //shifts the pointers down to the earliest vacant slot. This function is
   //called after all mergers are completed.
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:CondenseRings:1 RingNum=%ld\n",
+            CallLevel, "", RingNum );
 
-  if( RingNum < 0 ) return;
-  else if( RingNum == GetNumRings() - 1 ) return;
+  if( RingNum < 0 ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:CondenseRings:1a\n", CallLevel, "" );
+    CallLevel--;
+
+    return;
+  }
+  else if( RingNum == GetNumRings() - 1 ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:CondenseRings:1b\n", CallLevel, "" );
+    CallLevel--;
+
+    return;
+  }
 
   FireRing* ring1, * ring2;
   long i, j;
@@ -270,6 +295,9 @@ void CondenseRings( long RingNum )
       }
     }
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:CondenseRings:2\n", CallLevel, "" );
 
   //Free up CurRing if no points left!!!!!
   RingStruct* LastRing;
@@ -312,6 +340,10 @@ void CondenseRings( long RingNum )
   SetNumRings( NewRingNum );//(NewStructNum-1)*RINGS_PER_STRUCT+NewRingNum);
   NumRingStructs = NewStructNum;
   CurRing = FirstRing;
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:CondenseRings:3\n", CallLevel, "" );
+  CallLevel--;
 } //CondenseRings
 
 //============================================================================
@@ -686,13 +718,25 @@ BurnupFireRings::BurnupFireRings()
 //============================================================================
 void BurnupFireRings::BurnFireRings( long StartRingNum, long EndRingNum )
 { //BurnupFireRings::BurnupFireRings
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:BurnFireRings:1 \n", CallLevel, "" );
+
   long   i, j, m, start;
   long   begin, end, range, threadct;
   double fract, ipart, interval;
 
   FireRing* ring;
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:BurnFireRings:2 \n", CallLevel, "" );
+
   AllocRingBurn();  //Try to alloc ring burn
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:BurnFireRings:3 StartRingNum=%ld EndRingNum=%ld\n",
+            CallLevel, "", StartRingNum, EndRingNum );
+
   for( i = StartRingNum; i < EndRingNum; i++ ) {  // can parallelize here
     ring = GetRing( i );
     if( ! ring ) continue;
@@ -718,6 +762,10 @@ void BurnupFireRings::BurnFireRings( long StartRingNum, long EndRingNum )
       start = ring->NumPoints[j];
     }
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:BurnFireRings:4 \n", CallLevel, "" );
+  CallLevel--;
 } //BurnupFireRings::BurnupFireRings
 
 //============================================================================
@@ -735,16 +783,44 @@ void BurnupFireRings::CloseBurnupFireRings()
 //============================================================================
 bool BurnupFireRings::AllocRingBurn()
 { //BurnupFireRings::AllocRingBurn
-  if( NumRingBurn == GetMaxThreads() ) return true;
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:AllocRingBurn:1 \n", CallLevel, "" );
+
+  if( NumRingBurn == GetMaxThreads() ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:AllocRingBurn:1a\n", CallLevel, "" );
+    CallLevel--;
+
+    return true;
+  }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:AllocRingBurn:2 \n", CallLevel, "" );
 
   CloseBurnupFireRings();
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:AllocRingBurn:3 \n", CallLevel, "" );
+
   ringburn = new RingBurn[GetMaxThreads()];
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:AllocRingBurn:4 \n", CallLevel, "" );
+
   if( ringburn ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:AllocRingBurn:4a\n", CallLevel, "" );
+    CallLevel--;
+
     NumRingBurn = GetMaxThreads();
 
     return true;
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:AllocRingBurn:5 \n", CallLevel, "" );
+  CallLevel--;
 
   return false;
 } //BurnupFireRings::AllocRingBurn
@@ -771,6 +847,7 @@ void BurnupFireRings::ResetAllThreads()
 PostFrontal::PostFrontal()
 { //PostFrontal::PostFrontal
   MergeReferenceRingNum = -1;
+  ReferenceFireRingNum = -1; //20200316:Think this should've been initialized
   NumPFI = 0;
   pfi = 0;
   WeightLossErrorTolerance( 1.0 );
@@ -819,7 +896,15 @@ long PostFrontal::BurnupPrecision( long LoHi )
 //============================================================================
 long PostFrontal::AccessReferenceRingNum( long Merge, long Number )
 { //PostFrontal::AccessReferenceRingNum
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::AccessReferenceRingNum:1 "
+            "ReferenceFireRunNum=%ld\n", CallLevel, "", ReferenceFireRingNum );
+
   if( Number < 0 ) {
+    printf( "%*sfsxpfront:PostFrontal::AccessReferenceRingNum:1a\n",
+            CallLevel, "" );
+    CallLevel--;
     if( Merge ) return MergeReferenceRingNum;
     else return ReferenceFireRingNum;
   }
@@ -828,12 +913,21 @@ long PostFrontal::AccessReferenceRingNum( long Merge, long Number )
     else ReferenceFireRingNum = Number;
   }
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::AccessReferenceRingNum:2 "
+            "ReferenceFireRunNum=%ld\n", CallLevel, "", ReferenceFireRingNum );
+  CallLevel--;
+
   return 0;
 } //PostFrontal::AccessReferenceRingNum
 
 //============================================================================
 FireRing* PostFrontal::SetupFireRing( long NumFire, double Start, double End )
 { //PostFrontal::SetupFireRing
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::SetupFireRing:1 \n", CallLevel, "" );
+
   long   i, NumPoints;
   double x, y, r, f, c;
   FireRing* firering;
@@ -841,8 +935,13 @@ FireRing* PostFrontal::SetupFireRing( long NumFire, double Start, double End )
   if( NumRings == 0 ) MergeReferenceRingNum = -1; //Only at very beginning
 
   NumPoints = GetNumPoints( NumFire );
-  if( (firering = AllocFireRing(NumPoints, Start, End)) == NULL )
+  if( (firering = AllocFireRing(NumPoints, Start, End)) == NULL ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:PostFrontal::SetupFireRing:1a\n", CallLevel, "" );
+    CallLevel--;
+
     return NULL;
+  }
   firering->StartTime = Start;
   firering->ElapsedTime = End - Start;
   firering->OriginalFireNumber = NumFire;
@@ -863,6 +962,10 @@ FireRing* PostFrontal::SetupFireRing( long NumFire, double Start, double End )
   ReferenceFireRingNum = NumRings - 1;    // store for CorrectFireRing
 
   if( MergeReferenceRingNum < 0 ) MergeReferenceRingNum = NumRings - 1;
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::SetupFireRing:2\n", CallLevel, "" );
+  CallLevel--;
 
   return firering;
 } //PostFrontal::SetupFireRing
@@ -1259,6 +1362,10 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
   //the fire is inside an overlapping portion. Finally it calls the
   //FillOuterRing function to correctly pair-up the intersections that define
   //the overlaps, which calls the InterpolateOverlaps function, and so on....
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:1 "
+            "\n", CallLevel, "" );
 
   bool  Found, WriteIt;
   long  i, j, k, m, n, NumInsert, TotalPts, SumStatus;
@@ -1270,9 +1377,25 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
   FireRing* firering, ** newring = 0;
   PerimPoints* tempperim;
 
-  if( ReferenceFireRingNum == -1 ) return;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:2\n", CallLevel, "" );
+
+  if( ReferenceFireRingNum == -1 ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:2a\n",
+              CallLevel, "" );
+    CallLevel--;
+
+    return;
+  }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:3\n", CallLevel, "" );
 
   firering = GetRing( ReferenceFireRingNum );
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:4\n", CallLevel, "" );
 
   UpdateFireRing( firering, fires[0], NewPoints );
 
@@ -1283,6 +1406,9 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
     }
   }
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:5\n", CallLevel, "" );
+
   tempperim = new PerimPoints[(firering->NumPoints[0] + NumIsects * 2)];
   Start = -1;
   TotalPts = 0;
@@ -1292,7 +1418,7 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
   for( i = 0; i < NumIsects; i++ ) {
     FirstCross = isects[i * 2];
     Start++;
-    for( j = Start; j <= FirstCross; j++ ) {
+   for( j = Start; j <= FirstCross; j++ ) {
       memcpy( &tempperim[j + NumInsert], &firering->perimpoints[j],
               sizeof(PerimPoints) );
       TotalPts++;
@@ -1337,6 +1463,10 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
     tempperim[FirstCross + NumInsert].Area = -1.0;
     TotalPts++;
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:6\n", CallLevel, "" );
+
   for( j = Start + 1; j < firering->NumPoints[0]; j++ ) {
     memcpy( &tempperim[j + NumInsert], &firering->perimpoints[j],
             sizeof(PerimPoints) );
@@ -1346,6 +1476,9 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
   firering->perimpoints = new PerimPoints[TotalPts];
   memcpy( firering->perimpoints, tempperim, TotalPts * sizeof(PerimPoints) );
   firering->NumPoints[0] = TotalPts;
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:7\n", CallLevel, "" );
 
   //Find out which perim points are still on the new perimeter, flag with 1.
   NPNew = GetNumPoints( fires[0] );
@@ -1368,6 +1501,9 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
       }
     }
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:8\n", CallLevel, "" );
 
   //Allocate New Rings and move inward burning perim segments to newrings.
   if( NumPerims > 1 ) {
@@ -1417,6 +1553,9 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
     }
   }
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:9\n", CallLevel, "" );
+
   //Flag.
   for( i = 1; i < NumPerims; i++ ) {
     NPNew = GetNumPoints( fires[i] );
@@ -1438,15 +1577,20 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
     }
   }
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:10\n", CallLevel, "" );
+
   for( k = 1; k < NumPerims; k++ ) {
     RemoveRingEnclaves( newring[k] );
     FillOuterRing( newring[k] );
     FillMergeArray( newring[k] );
   }
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:11\n", CallLevel, "" );
+
   //Reorder perimeter if first outside points have been eliminated
   //(status flag==0).
-
   SumStatus = 0;
   for( i = 0; i < TotalPts; i++ ) {
     if( firering->perimpoints[i].Status < 2 )
@@ -1474,6 +1618,9 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
     }
   }
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:12\n", CallLevel, "" );
+
   if( tempperim ) delete[] tempperim;
 
   if( NumPerims > 1 ) RemoveRingEnclaves( firering );
@@ -1481,6 +1628,10 @@ void PostFrontal::CorrectFireRing( long NumIsects, long* isects,
 
   FillMergeArray( firering );
   if( newring ) delete[] newring;
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::CorrectFireRing:13\n", CallLevel, "" );
+  CallLevel--;
 } //PostFrontal::CorrectFireRing
 
 //============================================================================
@@ -2117,14 +2268,23 @@ long PostFrontal::Overlap( long NumPoints, double* verts )
 FireRing* PostFrontal::SpawnFireRing( long NumFire, long NumAlloc,
                                       double Start, double Elapsed )
 { //PostFrontal::SpawnFireRing
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::SpawnFireRing:1 \n", CallLevel, "" );
+
   //Loads first information into new fire ring structure.
   long   i, NumPoints;
   double x, y;
   FireRing* firering;
 
   NumPoints = GetNumPoints( NumFire );
-  if( (firering = AllocFireRing(NumAlloc, Start, Elapsed + Start)) == NULL )
+  if( (firering = AllocFireRing(NumAlloc, Start, Elapsed + Start)) == NULL ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:PostFrontal::SpawnFireRing:1a\n", CallLevel, "" );
+    CallLevel--;
+
     return NULL;
+  }
 
   firering->OriginalFireNumber = NumFire;
   firering->NumPoints[0] = NumPoints;
@@ -2144,6 +2304,10 @@ FireRing* PostFrontal::SpawnFireRing( long NumFire, long NumAlloc,
   }
 
   ReferenceFireRingNum = NumRings;    //Store for CorrectFireRing
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxpfront:PostFrontal::SpawnFireRing:2\n", CallLevel, "" );
+  CallLevel--;
 
   return firering;
 } //PostFrontal::SpawnFireRing
