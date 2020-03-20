@@ -11,7 +11,7 @@ LCPAnalyzer::LCPAnalyzer()
 { //LCPAnalyzer::LCPAnalyzer
   FileName = "";
   Analyzed = false;  //Flag telling if file was analyzed
-  HeaderSize = 0;
+  HeaderSize = NumErrors = 0;
   CalculatedHeaderSizeGood = false;
   CalculatedDataSizeGood = false;
 } //LCPAnalyzer::LCPAnalyzer
@@ -21,17 +21,23 @@ LCPAnalyzer::LCPAnalyzer( const char * FileName )
 { //LCPAnalyzer::LCPAnalyzer
   this->FileName = FileName;
   Analyzed = false;  //Flag telling if file was analyzed
-  HeaderSize = 0;
+  HeaderSize = NumErrors = 0;
   CalculatedHeaderSizeGood = false;
   CalculatedDataSizeGood = false;
 } //LCPAnalyzer::LCPAnalyzer
+
+//----------------------------------------------------------------------------
+LCPAnalyzer::~LCPAnalyzer()
+{ //LCPAnalyzer::~LCPAnalyzer
+  LCP.close();
+} //LCPAnalyzer::~LCPAnalyzer
 
 //----------------------------------------------------------------------------
 void LCPAnalyzer::SetFileName( const char * FileName )
 { //LCPAnalyzer::SetFileName
   this->FileName = FileName;
   Analyzed = false;  //Flag telling if file was analyzed
-  HeaderSize = 0;
+  HeaderSize = NumErrors = 0;
   CalculatedHeaderSizeGood = false;
   CalculatedDataSizeGood = false;
 } //LCPAnalyzer::SetFileName
@@ -55,12 +61,13 @@ bool LCPAnalyzer::Analyze()
 bool LCPAnalyzer::Analyze( const char * FileName )
 { //LCPAnalyzer::Analyze
   //Open file as binary & move to end.
-  fstream In( FileName, ios::in | ios::binary | ios::ate );
+  LCP.open( FileName, ios::in | ios::binary | ios::ate );
   
-  if( ! In.good() ) {
+  if( ! LCP.good() ) {
     Messages += "Unable to open file ";
     Messages += FileName;
     Messages += "\n";
+    NumErrors++;
     return false;
   }
   else {
@@ -70,7 +77,7 @@ bool LCPAnalyzer::Analyze( const char * FileName )
   }
 
   //Get total size.
-  TotalFileSize = In.tellg();
+  TotalFileSize = LCP.tellg();
   char s[80]; //Temp cstring
   sprintf( s, "Total file size: %ld \n", TotalFileSize );
   Messages += s;
@@ -82,20 +89,21 @@ bool LCPAnalyzer::Analyze( const char * FileName )
   //Now analyze header to get size of data types in file.
   //Initialize data type sizes with minimum assumed size (in bytes).
   //Chars are assumed to always be 1 bytes (8 bits).
-  ShortSize = 2;  //I.e. 16 bits
+  //Shorts are assumed to be 2 bytes I.e. 16 bits
+  //Doubles are assumed to be 8 bytes I.e. 16 bits
   LongSize = 4;   //I.e. 32 bits
-  DoubleSize = 8; //I.e. 64 bits
 
   bool OutOfIdeas = false;
   int attempt_num = 1;
   do {
     HeaderSize = CalcHeaderSize();
-    ReadHeader( In, HeaderSize, ShortSize, LongSize, DoubleSize );
+    ReadHeader( LCP, HeaderSize, SHORT_SIZE, LongSize, DOUBLE_SIZE );
 
     //Check some values in the header.
     int num_bad_values = 0;
 
     if( Latitude < -90 || Latitude > 90 ) {
+      //Bad value, but not a serious error.
       sprintf( s, "Latitude out of range: %ld\n", Latitude );
       Messages += s;
       num_bad_values++;
@@ -104,6 +112,7 @@ bool LCPAnalyzer::Analyze( const char * FileName )
     if( NumEast <= 0 ) {
       Messages += "Invalid number of columns (\'numeast\'): ";
       num_bad_values++;
+      NumErrors++;
     }
     else
       Messages += "number of columns (\'numeast\'): ";
@@ -113,6 +122,7 @@ bool LCPAnalyzer::Analyze( const char * FileName )
     if( NumNorth <= 0 ) {
       Messages += "Invalid number of rows (\'numnorth\'): ";
       num_bad_values++;
+      NumErrors++;
     }
     else
       Messages += "number of rows (\'numnorth\'): ";
@@ -122,6 +132,7 @@ bool LCPAnalyzer::Analyze( const char * FileName )
     if( EastUTM <= WestUTM ) {
       Messages += "Problem: EastUTM <= WestUTM: ";
       num_bad_values++;
+      NumErrors++;
     }
     sprintf( s, "WestUTM: %lf\nEastUTM: %lf\n", WestUTM, EastUTM );
     Messages += s;
@@ -129,6 +140,7 @@ bool LCPAnalyzer::Analyze( const char * FileName )
     if( NorthUTM <= SouthUTM ) {
       Messages += "Problem: NorthUTM <= SouthUTM:";
       num_bad_values++;
+      NumErrors++;
     }
     sprintf( s, "SouthUTM: %lf\nNorthUTM: %lf\n", SouthUTM, NorthUTM );
     Messages += s;
@@ -165,42 +177,46 @@ bool LCPAnalyzer::Analyze( const char * FileName )
   CalculatedDataSizeGood = false;
   unsigned long remaining_file_size = TotalFileSize - HeaderSize;
 
-  CellSize = 5 * ShortSize; //Initial assumed size
+  CellSize = 5 * SHORT_SIZE; //Initial assumed size
   unsigned long calculated_data_size = CalcDataSize();
   if( calculated_data_size > remaining_file_size ) {
     Messages += "File size is too small to contain all the grid data, ";
     sprintf( s, "if NumEast=%ld and NumNorth=%ld\n", NumEast, NumNorth );
     Messages += s;
+    NumErrors++;
   }
   else if( calculated_data_size < remaining_file_size ) {
     //Try again, assuming Ground Fuels included.
-    CellSize = 7 * ShortSize;
+    CellSize = 7 * SHORT_SIZE;
     calculated_data_size = CalcDataSize();
     if( calculated_data_size > remaining_file_size ) {
       Messages += "File size is too small to contain all the grid data, ";
       sprintf( s, "if NumEast=%ld and NumNorth=%ld", NumEast, NumNorth );
       Messages += s;
       Messages += ", and ground fuels are included.\n";
+      NumErrors++;
     }
     else if( calculated_data_size < remaining_file_size ) {
       //Try again, assuming Crown Fuels included.
-      CellSize = 8 * ShortSize;
+      CellSize = 8 * SHORT_SIZE;
       calculated_data_size = CalcDataSize();
       if( calculated_data_size > remaining_file_size ) {
         Messages += "File size is too small to contain all the grid data, ";
         sprintf( s, "if NumEast=%ld and NumNorth=%ld", NumEast, NumNorth );
         Messages += s;
         Messages += ", and crown fuels are included.\n";
+        NumErrors++;
       }
       else if( calculated_data_size < remaining_file_size ) {
         //Try again, assuming Ground & Crown Fuels included.
-        CellSize = 10 * ShortSize;
+        CellSize = 10 * SHORT_SIZE;
         calculated_data_size = CalcDataSize();
         if( calculated_data_size > remaining_file_size ) {
           Messages += "File size is too small to contain all the grid data, ";
           sprintf( s, "if NumEast=%ld and NumNorth=%ld", NumEast, NumNorth );
           Messages += s;
           Messages += ", and both ground & crown fuels are included.\n";
+          NumErrors++;
         }
         else if( calculated_data_size < remaining_file_size ) {
           Messages += "File size is too large, ";
@@ -208,6 +224,7 @@ bool LCPAnalyzer::Analyze( const char * FileName )
           Messages += s;
           Messages += ", even if both ground & crown fuels are included.\n";
           CellSize = 0;  //To flag that no good cell size was found
+          NumErrors++;
         }
         else CalculatedDataSizeGood = true;  //Data includes Ground & Crown
       }
@@ -217,8 +234,6 @@ bool LCPAnalyzer::Analyze( const char * FileName )
   }
   else CalculatedDataSizeGood = true;  //Data is just main 5 layers
 
-  In.close();
-  
   Analyzed = true;
 
   return true;
@@ -313,15 +328,109 @@ double LCPAnalyzer::ExtractAsDouble( const char *Mem, unsigned long Pos,
 unsigned long LCPAnalyzer::CalcHeaderSize()
 { //LCPAnalyzer::CalcHeaderSize
   return 1036 * LongSize +
-           10 * DoubleSize +
-           10 * ShortSize +
+           10 * DOUBLE_SIZE +
+           10 * SHORT_SIZE +
          3072 * 1; //chars
 } //LCPAnalyzer::CalcHeaderSize
 
 /*----------------------------------------------------------------------------
-  LCPAnalyzer::CalcHeaderSize
+  LCPAnalyzer::CalcDataSize
 */
 unsigned long LCPAnalyzer::CalcDataSize()
-{ //LCPAnalyzer::CalcHeaderSize
+{ //LCPAnalyzer::CalcDataSize
   return CellSize * NumEast * NumNorth;
-} //LCPAnalyzer::CalcHeaderSize
+} //LCPAnalyzer::CalcDataSize
+
+/*----------------------------------------------------------------------------
+  LCPAnalyzer::SetFilePos
+*/
+bool LCPAnalyzer::SetFilePos( unsigned long Pos )
+{ //LCPAnalyzer::SetFilePos
+  if( ! LCP.good() )
+    return false;
+    
+  LCP.seekg( Pos, ios::beg );  //Reset from start of file
+  return true;
+} //LCPAnalyzer::SetFilePos
+
+/*----------------------------------------------------------------------------
+  LCPAnalyzer::ExtractInteger
+  This extracts the given number of bytes from the LCP file stream and
+  converts them to an integer type (int, short, long, etc.).
+*/
+long LCPAnalyzer::ExtractInteger( int NumBytes )
+{ //LCPAnalyzer::ExtractInteger
+  char bytes[NumBytes];
+  LCP.read( bytes, NumBytes );
+
+  int sys_long_size = sizeof( long );
+
+  //Can't stuff more bytes than can fit in a long!
+  if( NumBytes > sys_long_size ) return 0;
+
+  unsigned char b[sys_long_size];  //Array to hold all bytes of a system long
+  for( int j = 0; j < sys_long_size; j++ ) {
+    if( j < NumBytes ) b[j] = bytes[j];
+    else b[j] = 0;
+  }
+
+  return *reinterpret_cast<long*>( b );
+} //LCPAnalyzer::ExtractInteger
+
+/*----------------------------------------------------------------------------
+  LCPAnalyzer::ExtractIntegers
+  Similar to ExtractInteger, but fills an array.
+    A        - The array to be filled
+    Size     - Size of array A
+    NumBytes - The number of bytes IN THE FILE that constitute one integer
+               value (one element of the array)
+*/
+bool LCPAnalyzer::ExtractIntegers( long *A, int Size, int NumBytes )
+{ //LCPAnalyzer::ExtractIntegers
+  char bytes[NumBytes*Size];
+  LCP.read( bytes, NumBytes*Size );
+
+  int sys_long_size = sizeof( long );
+
+  //Can't stuff more bytes than can fit in a long!
+  if( NumBytes > sys_long_size ) return false;
+
+  int offset = 0;
+  unsigned char b[sys_long_size];  //Array to hold all bytes of a system long
+  for( int i = 0; i < Size; i++ ) {
+    for( int j = 0; j < sys_long_size; j++ ) {
+      if( j < NumBytes ) b[j] = bytes[offset+j];
+      else b[j] = 0;
+    }
+    A[i] = *reinterpret_cast<long*>( b );
+    offset += NumBytes;
+  }
+
+  return true;
+} //LCPAnalyzer::ExtractIntegers
+
+/*----------------------------------------------------------------------------
+  LCPAnalyzer::ExtractDouble
+  For now, we're assuming doubles stay the same size (DOUBLE_SIZE).
+*/
+double LCPAnalyzer::ExtractDouble()
+{ //LCPAnalyzer::ExtractDouble
+  char bytes[DOUBLE_SIZE];
+  LCP.read( bytes, DOUBLE_SIZE );
+
+  double d = *reinterpret_cast<double *>( bytes );
+  return d;
+} //LCPAnalyzer::ExtractIntegers
+
+/*----------------------------------------------------------------------------
+  LCPAnalyzer::ExtractChars
+  Similar to ExtractIntegers, but fills an array of characters.
+    A        - The array to be filled
+    Size     - Size of array A
+
+  The size of char is assumed to be 1 byte.
+*/
+void LCPAnalyzer::ExtractChars( char *A, int Size )
+{ //LCPAnalyzer::ExtradtChars
+  LCP.read( A, Size );
+} //LCPAnalyzer::ExtradtChars

@@ -4,7 +4,7 @@
 using namespace std;
 
 /*============================================================================
-  LCPAnalyzer  -- Mar 4, 2020 -- J.Benoit
+  LCPAnalyzer  -- Mar10, 2020 -- J.Benoit
   This class provides analysis data for a given LCP (Landscape) file.
   The LCP file format is known not to be robust across different operating
   systems and computing platforms. This class gives hints to the true size of
@@ -13,10 +13,13 @@ using namespace std;
 class LCPAnalyzer
 { //LCPAnalysyzer
   private:
+    static const unsigned int SHORT_SIZE = 2; //Assume shorts are 2 bytes
+    static const unsigned int DOUBLE_SIZE = 8;//Assume doubles are 8 bytes
     string FileName, Messages;
     bool Analyzed, CalculatedHeaderSizeGood, CalculatedDataSizeGood;
-    unsigned int HeaderSize, CellSize, ShortSize, LongSize, DoubleSize;
+    unsigned int HeaderSize, CellSize, LongSize, NumErrors;
     unsigned long TotalFileSize;
+    fstream LCP;
     bool   ReadHeader( fstream &In, unsigned int header_size,
                        unsigned int short_size, unsigned int long_size,
                        unsigned int double_size );
@@ -35,21 +38,28 @@ class LCPAnalyzer
   public:
     LCPAnalyzer();
     LCPAnalyzer( const char * FileName );
-    void SetFileName( const char * FileName );
-    bool Analyze();
-    bool Analyze( const char * FileName );
+    ~LCPAnalyzer();
+    void   SetFileName( const char * FileName );
+    bool   Analyze();
+    bool   Analyze( const char * FileName );
+    bool   SetFilePos( unsigned long Pos = 0 );
+    long   ExtractInteger( int NumBytes );
+    bool   ExtractIntegers( long *A, int Size, int NumBytes );
+    double ExtractDouble();
+    void   ExtractChars( char *A, int Size );
 
     //Getters
     string GetFileName() { return FileName; }
     string GetMessages() { return Messages; }
+    int    GetNumErrors() { return NumErrors; }
     bool   IsAnalyzed() { return Analyzed; }
     bool   IsHeaderSizeGood() { return CalculatedHeaderSizeGood; }
     bool   IsDataSizeGood() { return CalculatedDataSizeGood; }
     unsigned int  GetHeaderSize() { return HeaderSize; }
     unsigned int  GetCellSize() { return CellSize; }
-    unsigned int  GetShortSize() { return ShortSize; }
-    unsigned int  GetLongSize() { return LongSize; }
-    unsigned int  GetDoubleSize() { return DoubleSize; }
+    unsigned int  GetLCPShortSize() { return SHORT_SIZE; }
+    unsigned int  GetLCPLongSize() { return LongSize; }
+    unsigned int  GetLCPDoubleSize() { return DOUBLE_SIZE; }
     unsigned long GetFileSize() { return TotalFileSize; }
     long   GetCrownFuels() { return CrownFuels; }
     long   GetGroundFuels() { return GroundFuels; }
