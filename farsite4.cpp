@@ -1790,16 +1790,43 @@ void TFarsiteInterface::FarsiteProcess3()
     CheckStopLocations();
   }
 
+  if( Verbose > CallLevel )
+    printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:5\n",
+            CallLevel, "" );
+
   if( CheckPostFrontal(GETVAL) ) {  //Reset to flag first num
+    if( Verbose > CallLevel )
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:5a\n",
+              CallLevel, "" );
+
     CondenseRings( burn.post.AccessReferenceRingNum(1, GETVAL) );
+
+    if( Verbose > CallLevel )
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:5b\n",
+              CallLevel, "" );
+
     burn.post.bup.BurnFireRings( burn.post.AccessReferenceRingNum(1, GETVAL),
                                  GetNumRings() );
+
+    if( Verbose > CallLevel )
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:5c\n",
+              CallLevel, "" );
+
     burn.post.ComputePostFrontal( burn.SIMTIME + burn.CuumTimeIncrement,
                                   &smolder, &flaming );
+
+    if( Verbose > CallLevel )
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:5d\n",
+              CallLevel, "" );
+
     //Could set to -1 for automatic.
     burn.post.AccessReferenceRingNum( 1, GetNumRings() );
   }
   burn.ResetIntersectionArrays();  //Free allocations for intersections
+
+  if( Verbose > CallLevel )
+    printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:6\n",
+            CallLevel, "" );
 
   if( StepThrough ) {
     if( PrimaryVisCount == PrimaryVisEqual ) {
@@ -1833,7 +1860,7 @@ void TFarsiteInterface::FarsiteProcess3()
   }
 
   if( Verbose > CallLevel )
-    printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:5 "
+    printf( "%*sfarsite4:TFarsiteInterface::FarsiteProcess3:7 "
             "burn.SIMTIME=%lf\n",
             CallLevel, "", burn.SIMTIME );
 
