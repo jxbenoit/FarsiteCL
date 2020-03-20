@@ -208,7 +208,13 @@ long FELocalSite::GetLandscapeData( double xpt, double ypt,
   SlopeConvert( cell.s );
   AspectConvert( cell.a );
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxwfms2:FELocalSite:GetLandscapeData:2 ld.fuel=%d\n",
+            CallLevel, "", ld.fuel );
   FuelConvert( cell.f );
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxwfms2:FELocalSite:GetLandscapeData:3 ld.fuel=%d\n",
+            CallLevel, "", ld.fuel );
   CoverConvert( cell.c );
   HeightConvert( crown.h );
   BaseConvert( crown.b );
@@ -220,6 +226,9 @@ long FELocalSite::GetLandscapeData( double xpt, double ypt,
   YLocation = ypt;
   ls = ld;
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxwfms2:FELocalSite:GetLandscapeData:4 ld.fuel=%d\n",
+            CallLevel, "", ld.fuel );
   CallLevel--;
 
   return posit;
@@ -731,12 +740,23 @@ void FireEnvironment2::ResetData(long FuelSize)
 //============================================================================
 bool FireEnvironment2::AllocStations( long Num )
 { //FireEnvironment2::AllocStations
+  CallLevel++;
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfms2:FireEnvironment2::AllocStations:1 Num=%ld\n",
+            CallLevel, "", Num );
+
   FreeStations();
   long i, j;
 
   if( Num > 0 ) {
     Stations = new FuelMoistureMap[Num];
-    if( Stations == NULL ) return false;
+    if( Stations == NULL ) {
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwfms2:FireEnvironment2::AllocStations:1a\n",
+                CallLevel, "" );
+      CallLevel--;
+      return false;
+    }
 
     for( i = 0; i < Num; i++ ) {
       Stations[i].AllocFuels( SIZECLASS_10HR );
@@ -746,12 +766,23 @@ bool FireEnvironment2::AllocStations( long Num )
 
     NumStations = Num;
   }
-  else return false;
+  else {
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwfms2:FireEnvironment2::AllocStations:2b\n",
+                CallLevel, "" );
+      CallLevel--;
+    return false;
+  }
 
   for( i = 0; i < MAX_NUM_STATIONS; i++ ) {
     for( j = 1; j < NUM_FUEL_SIZES; j++ )
       RefreshHistoryDescription( i, j );  //First call to this
   }
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwfms2:FireEnvironment2::AllocStations:2\n",
+            CallLevel, "" );
+  CallLevel--;
 
   return true;
 } //FireEnvironment2::AllocStations
@@ -759,26 +790,24 @@ bool FireEnvironment2::AllocStations( long Num )
 //============================================================================
 void FireEnvironment2::FreeStations()
 { //FireEnvironment2::FreeStations
-	if( Stations == NULL ) return;
+  if( Stations == NULL ) return;
 
-	long i, j;
-	for( i = 0; i < NumStations; i++ ) {
-		for( j = 0; j < NUM_FUEL_SIZES; j++ ) Stations[i].FreeFuels(j);
-	}
+  long i, j;
+  for( i = 0; i < NumStations; i++ ) {
+    for( j = 0; j < NUM_FUEL_SIZES; j++ ) Stations[i].FreeFuels(j);
+  }
 
-	delete[] Stations;
-	Stations = 0;
-	NumStations = 0;
+  delete[] Stations;
+  Stations = 0;
+  NumStations = 0;
 
-	for (i = 0; i < MAX_NUM_STATIONS; i++)
-	{
-		for (j = 0; j < NUM_FUEL_SIZES; j++)
-			FreeHistory(i, j);
-	}
-	CloseFmsThreads();
-	SimStart = -1.0;
+  for( i = 0; i < MAX_NUM_STATIONS; i++ ) {
+    for( j = 0; j < NUM_FUEL_SIZES; j++ )
+      FreeHistory(i, j);
+  }
+  CloseFmsThreads();
+  SimStart = -1.0;
 } //FireEnvironment2::FreeStations
-
 
 bool FireEnvironment2::AllocFmsThreads()
 {
@@ -1070,12 +1099,12 @@ double FireEnvironment2::GetMx( double Time, long fuel, long elev, long slope,
     return 0.0;
   }
 
-  if( Verbose >= CallLevel )
+  if( Verbose >= CallLevel ) {
     printf( "%*sfsxwfms2:FireEnvironment2::GetMx:2 "
             "sn=%ld Time=%lf fuel=%ld FuelSize=%ld (%ld)\n",
             CallLevel, "", sn, Time, fuel, FuelSize,
-            Stations[sn].FuelKey[FuelSize][fuel- 1] - 1
-             );
+            Stations[sn].FuelKey[FuelSize][fuel- 1] - 1 );
+  }
   if( *solrad == 1 ) {
     if( Verbose >= CallLevel )
       printf( "%*sfsxwfms2:FireEnvironment2::GetMx:2a\n", CallLevel, "" );
@@ -2730,22 +2759,44 @@ bool FuelMoistureMap::AllocFuels( long FuelSize )
     }
   }
 
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:2 "
+            "FuelSize=%ld NumFuels[FuelSize]=%ld\n", CallLevel, "",
+            FuelSize, NumFuels[FuelSize] );
   k = 1;
   for( i = 0; i <= NumFuels[FuelSize]; i++ ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:2a "
+              "FuelSize=%ld SIZECLASS_1000HR=%d\n", CallLevel, "",
+              FuelSize, SIZECLASS_1000HR );
     if( FuelSize < SIZECLASS_1000HR ) {
       fueltype = GetLandscapeTheme()->AllCats[3][i];
+      if( Verbose >= CallLevel )
+        printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:2a1 "
+                "fueltype=%ld\n", CallLevel, "", fueltype );
       //See if there are conversions.
       fueltype = GetFuelConversion( fueltype );
+      if( Verbose >= CallLevel )
+        printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:2a2 "
+                "fueltype=%ld\n", CallLevel, "", fueltype );
       if( fueltype < 257 && fueltype > 0 ) {
         if( FuelKey[FuelSize][fueltype - 1] == 0 )
           FuelKey[FuelSize][fueltype - 1] = k++;
+        if( Verbose >= CallLevel )
+          printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:2a2a "
+                  "FuelSize=%ld fueltype=%ld FuelKey[%ld][%ld]=%ld\n",
+                  CallLevel, "", FuelSize, fueltype, FuelSize, fueltype-1,
+                  FuelKey[FuelSize][fueltype-1] );
       }
     }
     else {
       fueltype = GetLandscapeTheme()->AllCats[9][i];
+      if( Verbose >= CallLevel )
+        printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:2a3 "
+                "fueltype=%ld\n", CallLevel, "", fueltype );
       if( fueltype<MAXNUM_COARSEWOODY_MODELS && fueltype>0 ) {
-      if( FuelKey[FuelSize][fueltype - 1] == 0 )
-        FuelKey[FuelSize][fueltype - 1] = k++;
+        if( FuelKey[FuelSize][fueltype - 1] == 0 )
+          FuelKey[FuelSize][fueltype - 1] = k++;
       }
     }
   }
@@ -2753,6 +2804,10 @@ bool FuelMoistureMap::AllocFuels( long FuelSize )
   NumFuels[FuelSize] = k - 1;
 
   //Reorder all of the fuels in the fuel key.
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:3 "
+            "FuelSize=%ld MAXNUM_FUEL_MODELS=%d\n", CallLevel, "",
+            FuelSize, MAXNUM_FUEL_MODELS );
   k=1;
   for( i=0; i<MAXNUM_FUEL_MODELS; i++ ) {
     if( FuelKey[FuelSize][i] > 0 ) FuelKey[FuelSize][i]=k++;
@@ -2760,7 +2815,7 @@ bool FuelMoistureMap::AllocFuels( long FuelSize )
   SearchCondenseFuels( FuelSize );
   if( NumFuels[FuelSize] == 0 ) {
     if( Verbose >= CallLevel )
-      printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:1b\n", CallLevel, "" );
+      printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:3a\n", CallLevel, "" );
     CallLevel--;
     return true;
   }
@@ -2780,7 +2835,7 @@ bool FuelMoistureMap::AllocFuels( long FuelSize )
   }
 
   if( Verbose >= CallLevel )
-    printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:2\n", CallLevel, "" );
+    printf( "%*sfsxwfms2:FuelMoistureMap:AllocFuels:4\n", CallLevel, "" );
   CallLevel--;
   return true;
 } //FuelMoistureMap::AllocFuels
@@ -2788,25 +2843,23 @@ bool FuelMoistureMap::AllocFuels( long FuelSize )
 
 void FuelMoistureMap::FreeFuels(long FuelSize)
 {
-	long i;
+  long i;
 
-	for (i = 0; i < NumFuels[FuelSize]; i++)
-	{
-		//if(FMS[FuelSize][i]->Fuel==0)
-		//	continue;
-		FMS[FuelSize][i]->FreeElevations();
-		delete FMS[FuelSize][i];
-	}
-	if (NumFuels[FuelSize] > 0)
-	{
-		if (FMS[FuelSize])
-			delete[] FMS[FuelSize];
-		FMS[FuelSize] = 0;
-	}
-	NumFuels[FuelSize] = 0;
-//	ZeroMemory(FuelKey[FuelSize], MAXNUM_FUEL_MODELS * sizeof(long));
-	memset(FuelKey[FuelSize],0x0, MAXNUM_FUEL_MODELS * sizeof(long));
-	CuumRain = 0.0;
+  for ( i = 0; i < NumFuels[FuelSize]; i++ ) {
+    //if(FMS[FuelSize][i]->Fuel==0)
+    //  continue;
+    FMS[FuelSize][i]->FreeElevations();
+    delete FMS[FuelSize][i];
+  }
+
+  if( NumFuels[FuelSize] > 0 ) {
+    if( FMS[FuelSize] )
+      delete[] FMS[FuelSize];
+      FMS[FuelSize] = 0;
+  }
+  NumFuels[FuelSize] = 0;
+  memset( FuelKey[FuelSize],0x0, MAXNUM_FUEL_MODELS * sizeof(long) );
+  CuumRain = 0.0;
 }
 
 
