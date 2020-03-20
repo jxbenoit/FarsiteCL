@@ -1853,7 +1853,7 @@ LandscapeTheme::LandscapeTheme( bool Analyze ) : GridTheme()
 
   memcpy( Name, GetLandFileName(), sizeof(Name) );
   for( i = 0; i < 10; i++ )
-    memset( &AllCats[i],0x0, 100 * sizeof(long) );
+    memset( &AllCats[i], 0x0, 100 * sizeof(long) );
 
   if( Verbose > CallLevel )
     printf( "%*sfsglbvar:LandscapeTheme::LandscapeTheme:2\n",
@@ -1862,9 +1862,13 @@ LandscapeTheme::LandscapeTheme( bool Analyze ) : GridTheme()
   if( Analyze ) AnalyzeStats();
   else ReadStats();
 
-  if( Verbose > CallLevel )
-    printf( "%*sfsglbvar:LandscapeTheme::LandscapeTheme:3\n",
-              CallLevel, "" );
+  if( Verbose > CallLevel ) {
+    printf( "%*sfsglbvar:LandscapeTheme::LandscapeTheme:3\n", CallLevel, "" );
+    printf( "%*s", CallLevel, "" );
+    for( int i = 0; i < 6; i++ )
+      printf( "[%ld] ", AllCats[3][i] );
+    printf( "\n" );
+  }
 
   CopyStats( F_DATA );
   CreateRamp();
@@ -1880,6 +1884,10 @@ LandscapeTheme::LandscapeTheme( bool Analyze ) : GridTheme()
 //============================================================================
 void LandscapeTheme::ReadStats()
 { //LandscapeTheme::ReadStats
+  CallLevel++;
+  if( Verbose > CallLevel )
+    printf( "%*sfsglbvar:LandscapeTheme:ReadStats:1\n", CallLevel, "" );
+
   NumAllCats[0] = Header.numelev;
   NumAllCats[1] = Header.numslope;
   NumAllCats[2] = Header.numaspect;
@@ -1921,6 +1929,10 @@ void LandscapeTheme::ReadStats()
   maxval[9] = Header.hiwoody;
   minval[9] = Header.lowoody;
   Continuous = 0;
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsglbvar:LandscapeTheme:ReadStats:2\n", CallLevel, "" );
+  CallLevel--;
 } //LandscapeTheme::ReadStats
 
 //============================================================================
@@ -1991,6 +2003,10 @@ void LandscapeTheme::CopyStats( long layer )
 //============================================================================
 void LandscapeTheme::FillCats()
 { //LandscapeTheme::FillCats
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsglbvar:LandscapeTheme:FillCats:1\n", CallLevel, "" );
+
   long   i, j, k, m, pos;
   double x, y, resx, resy;
   celldata cell;
@@ -2043,11 +2059,20 @@ void LandscapeTheme::FillCats()
   }
   for( m = 0; m < 10; m++ )
     if( NumAllCats[m] > 98 ) NumAllCats[m] = -1;
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsglbvar:LandscapeTheme:FillCats:2\n", CallLevel, "" );
+  CallLevel--;
 } //LandscapeTheme::FillCats
 
 //============================================================================
 void LandscapeTheme::SortCats()
 { //LandscapeTheme::SortCats
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsglbvar:LandscapeTheme:SortCats:1\n",
+            CallLevel, "" );
+
   long i, j, m;
   long SwapCats[101];
 
@@ -2068,6 +2093,11 @@ void LandscapeTheme::SortCats()
     minval[m] = AllCats[m][1];
     if( minval[m] < 0 ) minval[m] = 0;
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsglbvar:LandscapeTheme:SortCats:2\n",
+            CallLevel, "" );
+  CallLevel--;
 } //LandscapeTheme::SortCats
 
 //----------------------------------------------------------------------------
@@ -2303,89 +2333,183 @@ void ReadHeader()
   if( Verbose > CallLevel )
     printf( "%*sfsglbvar:ReadHeader:1\n", CallLevel, "" );
 
+  //If headsize has not been set yet, set it using LCPAnalyzer results.
+  LCPAnalyzer LA( LandFName );
+  LA.Analyze();
+  if( LA.GetNumErrors() > 0 ) {
+    printf( "ReadHeader: ## Errors found reading LCP file: ##\n" );
+    string s = LA.GetMessages();
+    printf( s.c_str() );
+  }
+  headsize = LA.GetHeaderSize();
+  unsigned int LongSize = LA.GetLCPLongSize();
+  unsigned int DoubleSize = LA.GetLCPDoubleSize();
+  unsigned int ShortSize = LA.GetLCPShortSize();
+
   fseek( landfile, 0, SEEK_SET );
-//AAA Replacing unsafe fread of struct block with freads of individual
-//AAA elements (otherwise, there can be byte-boundary problems).
-//AAA Eventually want to replace global FILE *landfile with local
-//AAA fstream LandFile.
-//AAA  fread( &Header, sizeof(Header), 1, landfile );
-fread( &Header.CrownFuels, 4, 1, landfile ); //AAA
-fread( &Header.GroundFuels, 4, 1, landfile ); //AAA
-fread( &Header.latitude, 4, 1, landfile ); //AAA
-fread( &Header.loeast,    8, 1, landfile ); //AAA
-fread( &Header.hieast,    8, 1, landfile ); //AAA
-fread( &Header.lonorth,   8, 1, landfile ); //AAA
-fread( &Header.hinorth,   8, 1, landfile ); //AAA
-fread( &Header.loelev, 4, 1, landfile ); //AAA
-fread( &Header.hielev, 4, 1, landfile ); //AAA
-fread( &Header.numelev, 4, 1, landfile ); //AAA
-fread( &Header.elevs, 4, 100, landfile ); //AAA
-fread( &Header.loslope, 4, 1, landfile ); //AAA
-fread( &Header.hislope, 4, 1, landfile ); //AAA
-fread( &Header.numslope, 4, 1, landfile ); //AAA
-fread( &Header.slopes, 4, 100, landfile ); //AAA
-fread( &Header.loaspect, 4, 1, landfile ); //AAA
-fread( &Header.hiaspect, 4, 1, landfile ); //AAA
-fread( &Header.numaspect, 4, 1, landfile ); //AAA
-fread( &Header.aspects, 4, 100, landfile ); //AAA
-fread( &Header.lofuel, 4, 1, landfile ); //AAA
-fread( &Header.hifuel, 4, 1, landfile ); //AAA
-fread( &Header.numfuel, 4, 1, landfile ); //AAA
-fread( &Header.fuels, 4, 100, landfile ); //AAA
-fread( &Header.locover, 4, 1, landfile ); //AAA
-fread( &Header.hicover, 4, 1, landfile ); //AAA
-fread( &Header.numcover, 4, 1, landfile ); //AAA
-fread( &Header.covers, 4, 100, landfile ); //AAA
-fread( &Header.loheight, 4, 1, landfile ); //AAA
-fread( &Header.hiheight, 4, 1, landfile ); //AAA
-fread( &Header.numheight, 4, 1, landfile ); //AAA
-fread( &Header.heights, 4, 100, landfile ); //AAA
-fread( &Header.lobase, 4, 1, landfile ); //AAA
-fread( &Header.hibase, 4, 1, landfile ); //AAA
-fread( &Header.numbase, 4, 1, landfile ); //AAA
-fread( &Header.bases, 4, 100, landfile ); //AAA
-fread( &Header.lodensity, 4, 1, landfile ); //AAA
-fread( &Header.hidensity, 4, 1, landfile ); //AAA
-fread( &Header.numdensity, 4, 1, landfile ); //AAA
-fread( &Header.densities, 4, 100, landfile ); //AAA
-fread( &Header.loduff, 4, 1, landfile ); //AAA
-fread( &Header.hiduff, 4, 1, landfile ); //AAA
-fread( &Header.numduff, 4, 1, landfile ); //AAA
-fread( &Header.duffs, 4, 100, landfile ); //AAA
-fread( &Header.lowoody, 4, 1, landfile ); //AAA
-fread( &Header.hiwoody, 4, 1, landfile ); //AAA
-fread( &Header.numwoody, 4, 1, landfile ); //AAA
-fread( &Header.woodies, 4, 100, landfile ); //AAA
-fread( &Header.numeast, 4, 1, landfile ); //AAA
-fread( &Header.numnorth, 4, 1, landfile ); //AAA
-fread( &Header.EastUtm, sizeof(double), 1, landfile ); //AAA
-fread( &Header.WestUtm, sizeof(double), 1, landfile ); //AAA
-fread( &Header.NorthUtm, sizeof(double), 1, landfile ); //AAA
-fread( &Header.SouthUtm, sizeof(double), 1, landfile ); //AAA
-fread( &Header.GridUnits, 4, 1, landfile ); //AAA
-fread( &Header.XResol, sizeof(double), 1, landfile ); //AAA
-fread( &Header.YResol, sizeof(double), 1, landfile ); //AAA
-fread( &Header.EUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.SUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.AUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.FOptions, sizeof(short), 1, landfile ); //AAA
-fread( &Header.CUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.HUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.BUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.PUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.DUnits, sizeof(short), 1, landfile ); //AAA
-fread( &Header.WOptions, sizeof(short), 1, landfile ); //AAA
-fread( &Header.ElevFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.SlopeFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.AspectFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.FuelFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.CoverFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.HeightFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.BaseFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.DensityFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.DuffFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.WoodyFile, sizeof(char), 256, landfile ); //AAA
-fread( &Header.Description, sizeof(char), 512, landfile ); //AAA
+  memset( &Header, 0, sizeof(Header) );
+  /*Using fread() is unsafe here, when the sizes of data types in the file can
+    be different than the sizes used in the compiled code.
+  */
+  //fread( &Header.CrownFuels, LongSize, 1, landfile );
+  //fread( &Header.GroundFuels, LongSize, 1, landfile );
+  //fread( &Header.latitude,  LongSize, 1, landfile );
+  //fread( &Header.loeast,    DoubleSize, 1, landfile );
+  //fread( &Header.hieast,    DoubleSize, 1, landfile );
+  //fread( &Header.lonorth,   DoubleSize, 1, landfile );
+  //fread( &Header.hinorth,   DoubleSize, 1, landfile );
+  //fread( &Header.loelev,    LongSize, 1, landfile );
+  //fread( &Header.hielev,    LongSize, 1, landfile );
+  //fread( &Header.numelev,   LongSize, 1, landfile );
+  //fread( &Header.elevs,     LongSize, 100, landfile );
+  //fread( &Header.loslope,   LongSize, 1, landfile );
+  //fread( &Header.hislope,   LongSize, 1, landfile );
+  //fread( &Header.numslope,  LongSize, 1, landfile );
+  //fread( &Header.slopes,    LongSize, 100, landfile );
+  //fread( &Header.loaspect,  LongSize, 1, landfile );
+  //fread( &Header.hiaspect,  LongSize, 1, landfile );
+  //fread( &Header.numaspect, LongSize, 1, landfile );
+  //fread( &Header.aspects,   LongSize, 100, landfile );
+  //fread( &Header.lofuel,    LongSize, 1, landfile );
+  //fread( &Header.hifuel,    LongSize, 1, landfile );
+  //fread( &Header.numfuel,   LongSize, 1, landfile );
+  //fread( &Header.fuels,     LongSize, 100, landfile );
+  //fread( &Header.locover,   LongSize, 1, landfile );
+  //fread( &Header.hicover,   LongSize, 1, landfile );
+  //fread( &Header.numcover,  LongSize, 1, landfile );
+  //fread( &Header.covers,    LongSize, 100, landfile );
+  //fread( &Header.loheight,  LongSize, 1, landfile );
+  //fread( &Header.hiheight,  LongSize, 1, landfile );
+  //fread( &Header.numheight, LongSize, 1, landfile );
+  //fread( &Header.heights,   LongSize, 100, landfile );
+  //fread( &Header.lobase,    LongSize, 1, landfile );
+  //fread( &Header.hibase,    LongSize, 1, landfile );
+  //fread( &Header.numbase,   LongSize, 1, landfile );
+  //fread( &Header.bases,     LongSize, 100, landfile );
+  //fread( &Header.lodensity, LongSize, 1, landfile );
+  //fread( &Header.hidensity, LongSize, 1, landfile );
+  //fread( &Header.numdensity, LongSize, 1, landfile );
+  //fread( &Header.densities, LongSize, 100, landfile );
+  //fread( &Header.loduff,    LongSize, 1, landfile );
+  //fread( &Header.hiduff,    LongSize, 1, landfile );
+  //fread( &Header.numduff,   LongSize, 1, landfile );
+  //fread( &Header.duffs,     LongSize, 100, landfile );
+  //fread( &Header.lowoody,   LongSize, 1, landfile );
+  //fread( &Header.hiwoody,   LongSize, 1, landfile );
+  //fread( &Header.numwoody,  LongSize, 1, landfile );
+  //fread( &Header.woodies,   LongSize, 100, landfile );
+  //fread( &Header.numeast,   LongSize, 1, landfile );
+  //fread( &Header.numnorth,  LongSize, 1, landfile );
+  //fread( &Header.EastUtm,   DoubleSize, 1, landfile );
+  //fread( &Header.WestUtm,   DoubleSize, 1, landfile );
+  //fread( &Header.NorthUtm,  DoubleSize, 1, landfile );
+  //fread( &Header.SouthUtm,  DoubleSize, 1, landfile );
+  //fread( &Header.GridUnits, LongSize, 1, landfile );
+  //fread( &Header.XResol,    DoubleSize, 1, landfile );
+  //fread( &Header.YResol,    DoubleSize, 1, landfile );
+  //fread( &Header.EUnits, sizeof(short), 1, landfile );
+  //fread( &Header.SUnits, sizeof(short), 1, landfile );
+  //fread( &Header.AUnits, sizeof(short), 1, landfile );
+  //fread( &Header.FOptions, sizeof(short), 1, landfile );
+  //fread( &Header.CUnits, sizeof(short), 1, landfile );
+  //fread( &Header.HUnits, sizeof(short), 1, landfile );
+  //fread( &Header.BUnits, sizeof(short), 1, landfile );
+  //fread( &Header.PUnits, sizeof(short), 1, landfile );
+  //fread( &Header.DUnits, sizeof(short), 1, landfile );
+  //fread( &Header.WOptions, sizeof(short), 1, landfile );
+  //fread( &Header.ElevFile, sizeof(char), 256, landfile );
+  //fread( &Header.SlopeFile, sizeof(char), 256, landfile );
+  //fread( &Header.AspectFile, sizeof(char), 256, landfile );
+  //fread( &Header.FuelFile, sizeof(char), 256, landfile );
+  //fread( &Header.CoverFile, sizeof(char), 256, landfile );
+  //fread( &Header.HeightFile, sizeof(char), 256, landfile );
+  //fread( &Header.BaseFile, sizeof(char), 256, landfile );
+  //fread( &Header.DensityFile, sizeof(char), 256, landfile );
+  //fread( &Header.DuffFile, sizeof(char), 256, landfile );
+  //fread( &Header.WoodyFile, sizeof(char), 256, landfile );
+  //fread( &Header.Description, sizeof(char), 512, landfile );
+  fseek( landfile,
+       LongSize*(36+1000)+DoubleSize*10+ShortSize*10+3072*sizeof(char),
+       SEEK_CUR );
+
+  LA.SetFilePos(); //Reset file ptr to start of file
+  Header.CrownFuels = LA.ExtractInteger( LongSize );
+  Header.GroundFuels = LA.ExtractInteger( LongSize );
+  Header.latitude = LA.ExtractInteger( LongSize );
+  Header.loeast = LA.ExtractDouble();
+  Header.hieast = LA.ExtractDouble();
+  Header.lonorth = LA.ExtractDouble();
+  Header.hinorth = LA.ExtractDouble();
+  Header.loelev = LA.ExtractInteger( LongSize );
+  Header.hielev = LA.ExtractInteger( LongSize );
+  Header.numelev = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.elevs, 100, LongSize );
+  Header.loslope = LA.ExtractInteger( LongSize );
+  Header.hislope = LA.ExtractInteger( LongSize );
+  Header.numslope = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.slopes, 100, LongSize );
+  Header.loaspect = LA.ExtractInteger( LongSize );
+  Header.hiaspect = LA.ExtractInteger( LongSize );
+  Header.numaspect = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.aspects, 100, LongSize );
+  Header.lofuel = LA.ExtractInteger( LongSize );
+  Header.hifuel = LA.ExtractInteger( LongSize );
+  Header.numfuel = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.fuels, 100, LongSize );
+  Header.locover = LA.ExtractInteger( LongSize );
+  Header.hicover = LA.ExtractInteger( LongSize );
+  Header.numcover = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.covers, 100, LongSize );
+  Header.loheight = LA.ExtractInteger( LongSize );
+  Header.hiheight = LA.ExtractInteger( LongSize );
+  Header.numheight = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.heights, 100, LongSize );
+  Header.lobase = LA.ExtractInteger( LongSize );
+  Header.hibase = LA.ExtractInteger( LongSize );
+  Header.numbase = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.bases, 100, LongSize );
+  Header.lodensity = LA.ExtractInteger( LongSize );
+  Header.hidensity = LA.ExtractInteger( LongSize );
+  Header.numdensity = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.densities, 100, LongSize );
+  Header.loduff = LA.ExtractInteger( LongSize );
+  Header.hiduff = LA.ExtractInteger( LongSize );
+  Header.numduff = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.duffs, 100, LongSize );
+  Header.lowoody = LA.ExtractInteger( LongSize );
+  Header.hiwoody = LA.ExtractInteger( LongSize );
+  Header.numwoody = LA.ExtractInteger( LongSize );
+  LA.ExtractIntegers( Header.woodies, 100, LongSize );
+  Header.numeast = LA.ExtractInteger( LongSize );
+  Header.numnorth = LA.ExtractInteger( LongSize );
+  Header.EastUtm = LA.ExtractDouble();
+  Header.WestUtm = LA.ExtractDouble();
+  Header.NorthUtm = LA.ExtractDouble();
+  Header.SouthUtm = LA.ExtractDouble();
+  Header.GridUnits = LA.ExtractInteger( LongSize );
+  Header.XResol = LA.ExtractDouble();
+  Header.YResol = LA.ExtractDouble();
+  Header.EUnits = LA.ExtractInteger( ShortSize );
+  Header.SUnits = LA.ExtractInteger( ShortSize );
+  Header.AUnits = LA.ExtractInteger( ShortSize );
+  Header.FOptions = LA.ExtractInteger( ShortSize );
+  Header.CUnits = LA.ExtractInteger( ShortSize );
+  Header.HUnits = LA.ExtractInteger( ShortSize );
+  Header.BUnits = LA.ExtractInteger( ShortSize );
+  Header.PUnits = LA.ExtractInteger( ShortSize );
+  Header.DUnits = LA.ExtractInteger( ShortSize );
+  Header.WOptions = LA.ExtractInteger( ShortSize );
+  LA.ExtractChars( Header.ElevFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.SlopeFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.AspectFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.FuelFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.CoverFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.HeightFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.BaseFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.DensityFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.DuffFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.WoodyFile, 256*sizeof(char) );
+  LA.ExtractChars( Header.Description, 512*sizeof(char) );
 
   //Check header.
   if( (Header.CrownFuels != 20 && Header.CrownFuels != 21) ||
@@ -2470,13 +2594,6 @@ fread( &Header.Description, sizeof(char), 512, landfile ); //AAA
             "## South: %15.6lf                          ##\n"
             "## North: %15.6lf                          ##\n",
             Header.loeast, Header.hieast, Header.lonorth, Header.hinorth );
-
-  //If headsize has not been set yet, set it using LCPAnalyzer results.
-  if( headsize == 0 ) {
-    LCPAnalyzer LA( LandFName );
-    LA.Analyze();
-    headsize = LA.GetHeaderSize();
-  }
 
   if( Verbose > CallLevel ) {
     printf( "%*sfsglbvar:ReadHeader:3a\n", CallLevel, "" );
