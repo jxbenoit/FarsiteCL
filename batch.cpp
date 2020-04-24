@@ -103,7 +103,7 @@ bool ProcessArgs( int argc, char* argv[], char **Filename )
     else if( bVerbose ) {
       //(Remember to check for invalid number values for verbose level here).
       long v = atol( p );
-      if( v >= 0 && v <= 12 ) Verbose = (int) v;
+      if( v >= 0 && v <= 13 ) Verbose = (int) v;
       else printf( "## Bad setting for Verbose argument ##\n" );
       bVerbose = false;
     }
