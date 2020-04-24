@@ -59,6 +59,8 @@ bool Exists( char *Filename )
   if( access(Filename,F_OK) == 0 ) return true;
 #elif defined( OS_X )   //______________________________________ For Mac OS X
   if( access(Filename,F_OK) == 0 ) return true;
+#else                    //__________________________________ Everything else 
+  if( _access(Filename,0) == 0 ) return true;
 #endif
 //###########################################################################
   else return false;
@@ -81,6 +83,8 @@ bool IsReadable( char *Filename )
   if( access(Filename,R_OK) == 0 ) return true;
 #elif defined( OS_X )   //______________________________________ For Mac OS X
   if( access(Filename,R_OK) == 0 ) return true;
+#else   //___________________________________________________ Everything else
+  if( _access(Filename,4) == 0 ) return true;
 #endif
 //###########################################################################
   else return false;
@@ -103,6 +107,8 @@ bool IsWritable( char *Filename )
   if( access(Filename,W_OK) == 0 ) return true;
 #elif defined( OS_X )   //______________________________________ For Mac OS X
   if( access(Filename,W_OK) == 0 ) return true;
+#else   //___________________________________________________ Everything else
+  if( _access(Filename,2) == 0 ) return true;
 #endif
 //###########################################################################
   else return false;
@@ -180,6 +186,8 @@ bool ChangeDir( char *Dir )
 #elif defined( DEV_C )     //______________________________________ For Dev C
   if( chdir(Dir) == 0 ) return true;
 #elif defined( OS_X )   //______________________________________ For Mac OS X
+  if( chdir(Dir) == 0 ) return true;
+#else   //___________________________________________________ Everything else
   if( chdir(Dir) == 0 ) return true;
 #endif
 //###########################################################################
