@@ -162,7 +162,6 @@ void Intersections::CleanPerimeter( long CurrentFire )
     SetNumPoints( CurrentFire, writenum );
     if( writenum == 0 ) {  // done here or in Intersect::CrossCompare
       SetInout( CurrentFire, 0 );
-      FreePerimeter1( CurrentFire );
       IncSkipFires( 1 );
       if( CheckPostFrontal(GETVAL) )
         SetNewFireNumber( CurrentFire, -1,
@@ -216,31 +215,50 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
     istop2 = pointcount;
     StartAtCross = true;
 
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:1a\n"; //AAA
     GetPerimeter1Point( CurrentFire, pointcountl, &PrevPt );
     Pt1 = PrevPt;
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:1b " //AAA
+         << PrevPt.Get(PerimeterPoint::X_VAL) << " " //AAA
+         << Pt1.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
     pointcountn = pointcountl + 1;
     GetPerimeter1Point( CurrentFire, pointcountn, &NextPt );
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:1c " //AAA
+         << NextPt.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
     GetInterPoint( StartPoint, &Pt );
     CrossFound = 1;
     CrossLastL = pointcount;
     CrossLastN = pointcount + 1;
 
     pointcount = pointcountl;
-    Pt1.x = Pt.x;
-    Pt1.y = Pt.y;
-    SetSwap( writecount++, Pt1.x, Pt1.y, Pt1.ROS, Pt1.FLI, Pt1.RCX );
+    Pt1 = Pt;
+    SetSwap( writecount++, Pt1.Get(PerimeterPoint::X_VAL),
+                           Pt1.Get(PerimeterPoint::Y_VAL),
+                           Pt1.Get(PerimeterPoint::ROS_VAL),
+                           Pt1.GetFLI(),
+                           Pt1.Get(PerimeterPoint::RCX_VAL) );
     InOut = 2;
   }
   else {
     AllocPerimeter2( writelimit );
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:1d\n"; //AAA
     GetPerimeter1Point( CurrentFire, pointcount, &Pt );
     GetPerimeter1Point( CurrentFire, pointcountl, &PrevPt );
     GetPerimeter1Point( CurrentFire, pointcountn, &NextPt );
     GetPerimeter1Point( CurrentFire, 0, &Pt1 );
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:1e " //AAA
+         << Pt.Get(PerimeterPoint::X_VAL) << " " //AAA
+         << Pt1.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
 
-    Pt1.x = Pt.x;
-    Pt1.y = Pt.y;
-    SetPerimeter2( writecount++, Pt1.x, Pt1.y, Pt1.ROS, Pt1.FLI, Pt1.RCX );
+    //202004201232 JWB: 'Corrected' this line: Pt1 = Pt;
+    Pt1.SetLoc( Pt.GetX(), Pt.GetY() );
+
+    SetPerimeter2( writecount++, Pt1.Get(PerimeterPoint::X_VAL),
+                                 Pt1.Get(PerimeterPoint::Y_VAL),
+                                 Pt1.Get(PerimeterPoint::ROS_VAL),
+                                 Pt1.GetFLI(),
+                                 Pt1.Get(PerimeterPoint::RCX_VAL) );
+    InOut = 2;
     InOut = GetInout( CurrentFire );
   }
 
@@ -306,41 +324,36 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
       pointcountl = pointcountn;
       pointcountn = pointtoward;
       if( ! CrossFound ) {
-        Pt5.x = PrevPt.x;
-        Pt5.y = PrevPt.y;
-        Pt5.ROS = PrevPt.ROS;
-        Pt5.FLI = PrevPt.FLI;
-        Pt5.RCX = PrevPt.RCX;
-        PtC.x = Pt5.x;
-        PtC.y = Pt5.y;
+        Pt5 = PrevPt;
+        PtC.Set( Pt5.Get(PerimeterPoint::X_VAL),
+                 Pt5.Get(PerimeterPoint::Y_VAL) );
       }
       else {
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2a\n"; //AAA
         GetPerimeter1Point( CurrentFire, pointcountn, &NextPt );
-        Pt5.x = NextPt.x;
-        Pt5.y = NextPt.y;
-        Pt5.ROS = NextPt.ROS;
-        Pt5.FLI = NextPt.FLI;
-        Pt5.RCX = NextPt.RCX;
-        PtC.x = Pt5.x;
-        PtC.y = Pt5.y;
+        Pt5 = NextPt;
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2b " //AAA
+         << NextPt.Get(PerimeterPoint::X_VAL) << " " //AAA
+         << Pt5.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
+        PtC.Set( Pt5.Get(PerimeterPoint::X_VAL),
+                 Pt5.Get(PerimeterPoint::Y_VAL) );
         if( pointcountl != 0 && pointcountn > pointcountl ) Direction = 0;
       }
     }
     else {
-      Pt5.x = NextPt.x;
-      Pt5.y = NextPt.y;
-      Pt5.ROS = NextPt.ROS;
-      Pt5.FLI = NextPt.FLI;
-      Pt5.RCX = NextPt.RCX;
-      PtC.x = Pt5.x;
-      PtC.y = Pt5.y;
+      Pt5 = NextPt;
+      PtC.Set( Pt5.Get(PerimeterPoint::X_VAL),
+               Pt5.Get(PerimeterPoint::Y_VAL) );
       pointtoward = pointcountn;
     }
 
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2c\n"; //AAA
     GetPerimeter1Point( CurrentFire, pointtoward, &Pt2 );
-    Pt5.ROS = Pt2.ROS;
-    Pt5.FLI = Pt2.FLI;
-    Pt5.RCX = Pt2.RCX;
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2d " //AAA
+         << Pt2.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
+    Pt5.SetCharacteristics( Pt2.Get(PerimeterPoint::ROS_VAL),
+                            Pt2.GetFLI() );
+    Pt5.SetReact( Pt2.Get(PerimeterPoint::RCX_VAL) );
     mindistSq = Pt.CalcDistSq( PtC );
 
     testdistSq = 0.0;
@@ -366,11 +379,18 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
       else if( CrossLastL == 0 && CrossLastN == numpts - 1 &&
                crosscount == numpts - 1 ) continue;
 
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2e\n"; //AAA
       GetPerimeter1Point( CurrentFire, crosscount, &PtA );
       GetPerimeter1Point( CurrentFire, nextcount, &PtB );
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2f " //AAA
+         << PtA.Get(PerimeterPoint::X_VAL) << " " //AAA
+         << PtB.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
       dup1 = dup2 = 1; //Want crosses only if on span1 && span2
-      crossyn = Cross( Pt.x, Pt.y, PtC.x, PtC.y, PtA.x, PtA.y, PtB.x, PtB.y,
-                       &PtD.x, &PtD.y, &dup1, &dup2 );
+      double dx = PtD.GetX(), dy = PtD.GetY();
+      crossyn = Cross( Pt.GetX(), Pt.GetY(), PtC.GetX(), PtC.GetY(),
+                       PtA.GetX(), PtA.GetY(), PtB.GetX(), PtB.GetY(),
+                       &dx, &dy, &dup1, &dup2 );
+      PtD.SetLoc( dx, dy );
 
       ptcross1 = ptcross2 = false;
 
@@ -379,23 +399,32 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
       else if( dup1 < 0 ) {   //If cross duplicates xpt, ypt
         dup1 = 1;
         dup2 = 0;
-        if( ! Cross(PrevPt.x, PrevPt.y, PtC.x, PtC.y, PtA.x, PtA.y,
-                    PtB.x, PtB.y, &DummyPt.x, &DummyPt.y, &dup1, &dup2) )
+        dx = DummyPt.GetX(), dy = DummyPt.GetY();
+        if( ! Cross(PrevPt.GetX(), PrevPt.GetY(), PtC.GetX(), PtC.GetY(),
+                    PtA.GetX(), PtA.GetY(), PtB.GetX(), PtB.GetY(),
+                    &dx, &dy, &dup1, &dup2) )
           ptcross1 = true; //Means this is just a single pt cross
         else if( dup1 < 0 )
           ptcross1 = true; //Means this is just a single pt cross
+        DummyPt.Set( dx, dy );
       }
       else if( dup2 < 0 ) {  //If cross duplicates crxpt, crypt
         n = crosscount - 1;
         if( n < 0 ) n = GetNumPoints( CurrentFire ) - 1;
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2g\n"; //AAA
         GetPerimeter1Point( CurrentFire, n, &PrevPt );
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2h " //AAA
+         << PrevPt.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
         dup1 = 0;
         dup2 = 1;
-        if( ! Cross(Pt.x, Pt.y, PtC.x, PtC.y, PrevPt.x, PrevPt.y,
-                    PtB.x, PtB.y, &DummyPt.x, &DummyPt.y, &dup1, &dup2) )
+        dx = DummyPt.GetX(), dy = DummyPt.GetY();
+        if( ! Cross(Pt.GetX(), Pt.GetY(), PtC.GetX(), PtC.GetY(),
+                    PrevPt.GetX(), PrevPt.GetY(), PtB.GetX(), PtB.GetY(),
+                    &dx, &dy, &dup1, &dup2) )
           ptcross2 = true; //Means this is just a single pt cross
         else if( dup2 < 0 )
           ptcross2 = true; //Means this is just a single pt cross
+        DummyPt.Set( dx, dy );
       }
 
       if( crossyn ) {
@@ -419,8 +448,9 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
             else outdist = 0.000001;
             outdist /= distl;
 
-            PtD.x = Pt.x - outdist * ( PtA.x - PtB.x );
-            PtD.y = Pt.y - outdist * ( PtA.y - PtB.y );
+            double x = Pt.GetX() - outdist * ( PtA.GetX() - PtB.GetX() );
+            double y = Pt.GetY() - outdist * ( PtA.GetY() - PtB.GetY() );
+            PtD.SetLoc( x, y );
             //------------------------------------------------
             break;
           }
@@ -435,30 +465,40 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
           CrossFound = 1;
           CrossSpan = crosscount;
           CrossNext = nextcount;
-          Pt5.x = PtD.x;
-          Pt5.y = PtD.y;
+          Pt5 = PtD;
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2i\n"; //AAA
           GetPerimeter1Point( CurrentFire, crosscount, &Pt3 );
           GetPerimeter1Point( CurrentFire, nextcount, &Pt4 );
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2j " //AAA
+         << Pt3.Get(PerimeterPoint::X_VAL) << " " //AAA
+         << Pt4.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
           crossdist3 = PtA.CalcDist( PtB );
           crossdist4 = PtA.CalcDist( PtD );
           totaldist = crossdist3 + crossdist1;
           crossdist3 -= crossdist4;
           if( totaldist > 0.0 ) {
-            Pt5.ROS = ( Pt1.ROS * mindist +
-                        Pt2.ROS * crossdist2 +
-                        Pt3.ROS * crossdist3 +
-                        Pt4.ROS * crossdist4 ) / totaldist;
-            Pt5.FLI = ( fabs(Pt1.FLI) * mindist +
-                        fabs(Pt2.FLI) * crossdist2 +
-                        fabs(Pt3.FLI) * crossdist3 +
-                        fabs(Pt4.FLI) * crossdist4 ) / totaldist;
-            Pt5.RCX = ( Pt1.RCX * mindist +
-                        Pt2.RCX * crossdist2 +
-                        Pt3.RCX * crossdist3 +
-                        Pt4.RCX * crossdist4 ) / totaldist;
-            if( (Pt1.FLI < 0.0 || Pt2.FLI < 0.0) &&
-                (Pt3.FLI < 0.0 || Pt4.FLI < 0.0) )
-              Pt5.FLI = -Pt5.FLI;
+            Pt5.SetCharacteristics(
+                      ( Pt1.Get(PerimeterPoint::ROS_VAL) * mindist +
+                        Pt2.Get(PerimeterPoint::ROS_VAL) * crossdist2 +
+                        Pt3.Get(PerimeterPoint::ROS_VAL) * crossdist3 +
+                        Pt4.Get(PerimeterPoint::ROS_VAL) * crossdist4 )
+                        / totaldist,
+                      ( fabs(Pt1.GetFLI()) * mindist +
+                        fabs(Pt2.GetFLI()) * crossdist2 +
+                        fabs(Pt3.GetFLI()) * crossdist3 +
+                        fabs(Pt4.GetFLI()) * crossdist4 )
+                        / totaldist );
+            Pt5.SetReact(
+                        ( Pt1.Get(PerimeterPoint::RCX_VAL) * mindist +
+                          Pt2.Get(PerimeterPoint::RCX_VAL) * crossdist2 +
+                          Pt3.Get(PerimeterPoint::RCX_VAL) * crossdist3 +
+                          Pt4.Get(PerimeterPoint::RCX_VAL) * crossdist4 )
+                          / totaldist );
+            if( (Pt1.GetFLI() < 0.0 ||
+                 Pt2.GetFLI() < 0.0) &&
+                (Pt3.GetFLI() < 0.0 ||
+                 Pt4.GetFLI() < 0.0) )
+              Pt5.SetFLI( -Pt5.GetFLI() );
           }
         }
       }
@@ -484,8 +524,10 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
           Terminate = 1;
         }
       }
-      else SetPerimeter2( writecount++, Pt5.x, Pt5.y, Pt5.ROS, Pt5.FLI,
-                          Pt5.RCX );
+      else SetPerimeter2( writecount++, Pt5.GetX(), Pt5.GetY(),
+                          Pt5.Get(PerimeterPoint::ROS_VAL),
+                          Pt5.GetFLI(),
+                          Pt5.Get(PerimeterPoint::RCX_VAL) );
     }
     else {
       //If writing new inward polygon.
@@ -509,7 +551,10 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
       }
 
       if( ! Terminate ) {
-        SetSwap( writecount++, Pt5.x, Pt5.y, Pt5.ROS, Pt5.FLI, Pt5.RCX );
+        SetSwap( writecount++, Pt5.GetX(), Pt5.GetY(),
+                          Pt5.Get(PerimeterPoint::ROS_VAL),
+                          Pt5.GetFLI(),
+                          Pt5.Get(PerimeterPoint::RCX_VAL) );
         if( CrossFound )    //Only for inward fires after crossfound
           OffsetCrossPoint = true;
       }
@@ -560,9 +605,12 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
                     Exit = true;
                   }
                   double ratio = ( distl - outdist ) / distl;
-                  SetSwap( writecount - 1, Pt.x - ratio * (Pt.x - Pt5.x),
-                                           Pt.y - ratio * (Pt.y - Pt5.y),
-                                           Pt5.ROS, Pt5.FLI, Pt5.RCX );
+                  SetSwap( writecount - 1,
+                           Pt.GetX() - ratio * (Pt.GetX() - Pt5.GetX()),
+                           Pt.GetY() - ratio * (Pt.GetY() - Pt5.GetY()),
+                           Pt5.Get(PerimeterPoint::ROS_VAL),
+                           Pt5.GetFLI(),
+                           Pt5.Get(PerimeterPoint::RCX_VAL) );
                   OffsetCrossPoint = false;
                 }
               }
@@ -649,7 +697,10 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
       if( pointcount == numpts ) pointcount = 0;
       else if( pointcount < 0 ) pointcount = numpts - 1;
     }
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2k\n"; //AAA
     GetPerimeter1Point( CurrentFire, pointcountn, &NextPt );
+std::cerr<<"AAA newclip:Intersections:FindFirePerimeter:2l " //AAA
+         << NextPt.Get(PerimeterPoint::X_VAL) << "\n"; //AAA
     PrevPt = Pt;
     Pt = Pt1 = Pt5;
     if( StartPoint == -1 ) {
@@ -704,7 +755,6 @@ void Intersections::FindFirePerimeter( long CurrentFire, long StartPoint )
     if( writecount > 2 && arp(1, GetNewFires()) < 0.0 )
       IncNewFires( 1 );   //If numpts>2 && inward fire
     else {
-      FreePerimeter1( GetNewFires() );
       SetNumPoints( GetNewFires(), 0 );
       SetInout( GetNewFires(), 0 );
     }
@@ -1230,10 +1280,11 @@ bool StandardizePolygon::Cross( Point Pt1, Point Pt2,
                                 long *dup1, long *dup2 )
 { //StandardizePolygon::Cross
   double new_x, new_y;
-  bool ret = Cross( Pt1.x, Pt1.y, Pt2.x, Pt2.y, NextPt1.x, NextPt1.y,
-                    NextPt2.x, NextPt2.y, &new_x, &new_y, dup1, dup2 );
-  NewPt->x = new_x;
-  NewPt->y = new_y;
+  bool ret = Cross( Pt1.GetX(), Pt1.GetY(), Pt2.GetX(), Pt2.GetY(),
+                    NextPt1.GetX(), NextPt1.GetY(),
+                    NextPt2.GetX(), NextPt2.GetY(),
+                    &new_x, &new_y, dup1, dup2 );
+  NewPt->Set( new_x, new_y );
 
   return ret;
 } //StandardizePolygon::Cross
