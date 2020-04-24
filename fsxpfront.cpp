@@ -5,6 +5,7 @@
 */
 #include<math.h>
 #include<string.h>
+#include<iostream>
 #include"fsxpfront.h"
 #include"fsglbvar.h"
 #include"burnupw.h"
@@ -40,54 +41,54 @@ FireRing* AllocFireRing( long NumPoints, double start, double end )
 
   if( FirstRing == 0 ) {
     if( (FirstRing = new RingStruct) == NULL ) return 0;
-      CurRing = FirstRing;
-      CurRing->NumFireRings = 0;
-      CurRing->StructNum = 0;
-      NumRingStructs++;
-      for( i = 0; i < RINGS_PER_STRUCT; i++ ) {
-        CurRing->firering[i].perimpoints = 0;
-        CurRing->firering[i].mergepoints = 0;
-        CurRing->firering[i].NumPoints = 0;
-      }
+    CurRing = FirstRing;
+    CurRing->NumFireRings = 0;
+    CurRing->StructNum = 0;
+    NumRingStructs++;
+    for( i = 0; i < RINGS_PER_STRUCT; i++ ) {
+      CurRing->firering[i].perimpoints = 0;
+      CurRing->firering[i].mergepoints = 0;
+      CurRing->firering[i].NumPoints = 0;
     }
-    else if( ThisRing >= NumRingStructs ) {
-      if( CurRing->StructNum != NumRingStructs - 1 )
-        GetLastRingStruct();
-      //NextRing = (RingStruct *) CurRing->next = new RingStruct;
-      RingStruct* t_next;
-      t_next = new RingStruct;
-      CurRing->next=t_next;
-      //NextRing=CurRing->next;
-      NextRing = t_next;
-      CurRing = NextRing;
-      CurRing->NumFireRings = 0;
-      CurRing->StructNum = NumRingStructs;
-      NumRingStructs++;
-      for( i = 0; i < RINGS_PER_STRUCT; i++ ) {
-        CurRing->firering[i].perimpoints = 0;
-        CurRing->firering[i].mergepoints = 0;
-        CurRing->firering[i].NumPoints = 0;
-      }
+  }
+  else if( ThisRing >= NumRingStructs ) {
+    if( CurRing->StructNum != NumRingStructs - 1 )
+      GetLastRingStruct();
+    //NextRing = (RingStruct *) CurRing->next = new RingStruct;
+    RingStruct* t_next;
+    t_next = new RingStruct;
+    CurRing->next=t_next;
+    //NextRing=CurRing->next;
+    NextRing = t_next;
+    CurRing = NextRing;
+    CurRing->NumFireRings = 0;
+    CurRing->StructNum = NumRingStructs;
+    NumRingStructs++;
+    for( i = 0; i < RINGS_PER_STRUCT; i++ ) {
+      CurRing->firering[i].perimpoints = 0;
+      CurRing->firering[i].mergepoints = 0;
+      CurRing->firering[i].NumPoints = 0;
     }
-    else if( ThisRing != CurRing->StructNum ) GetRing( NumRings );
+  }
+  else if( ThisRing != CurRing->StructNum ) GetRing( NumRings );
 
-    CurRing->firering[curplace].perimpoints = new PerimPoints[NumPoints];
-    for( i = 0; i < NumPoints; i++ )
-      memset( &CurRing->firering[curplace].perimpoints[i],0x0,
-              sizeof(PerimPoints) );
-    CurRing->firering[curplace].NumPoints = new long[2];
-    CurRing->firering[curplace].NumPoints[0] = NumPoints;
-    CurRing->firering[curplace].NumFires = 1;
-    CurRing->firering[curplace].StartTime = start;
-    CurRing->firering[curplace].ElapsedTime = end - start;
-    CurRing->firering[curplace].mergepoints = 0;
-    CurRing->firering[curplace].NumMergePoints[0] = 0;
-    CurRing->firering[curplace].NumMergePoints[1] = 0;
+  CurRing->firering[curplace].perimpoints = new PerimPoints[NumPoints];
+  for( i = 0; i < NumPoints; i++ )
+    memset( &CurRing->firering[curplace].perimpoints[i],0x0,
+            sizeof(PerimPoints) );
+  CurRing->firering[curplace].NumPoints = new long[2];
+  CurRing->firering[curplace].NumPoints[0] = NumPoints;
+  CurRing->firering[curplace].NumFires = 1;
+  CurRing->firering[curplace].StartTime = start;
+  CurRing->firering[curplace].ElapsedTime = end - start;
+  CurRing->firering[curplace].mergepoints = 0;
+  CurRing->firering[curplace].NumMergePoints[0] = 0;
+  CurRing->firering[curplace].NumMergePoints[1] = 0;
 
-    CurRing->NumFireRings++;
-    NumRings++;
+  CurRing->NumFireRings++;
+  NumRings++;
 
-    return &CurRing->firering[curplace];
+  return &CurRing->firering[curplace];
 } //AllocFireRing
 
 
@@ -151,6 +152,7 @@ FireRing* GetRing( long RingNum )
   CallLevel++;
   if( Verbose >= CallLevel )
     printf( "%*sfsxpfront:GetRing:1 RingNum=%ld\n", CallLevel, "", RingNum );
+std::cerr << "AAA fsxpfront:GetRing:1 RingNum=" << RingNum << std::endl; //AAA
 
   long i, curplace, ThisRing;
   double Ring;
@@ -160,6 +162,7 @@ FireRing* GetRing( long RingNum )
     if( Verbose >= CallLevel )
       printf( "%*sfsxpfront:GetRing:1a\n", CallLevel, "" );
     CallLevel--;
+std::cerr << "AAA fsxpfront:GetRing:1a" << std::endl; //AAA
 
     return (FireRing *) NULL;
   }
@@ -167,6 +170,7 @@ FireRing* GetRing( long RingNum )
   if( Verbose >= CallLevel )
     printf( "%*sfsxpfront:GetRing:2\n", CallLevel, "" );
 
+std::cerr << "AAA fsxpfront:GetRing:2" << std::endl; //AAA
   modf( ((double) RingNum / (double) RINGS_PER_STRUCT), &Ring );
   ThisRing = (long) Ring;
 
@@ -193,14 +197,17 @@ FireRing* GetRing( long RingNum )
  
   if( Verbose >= CallLevel )
     printf( "%*sfsxpfront:GetRing:6\n", CallLevel, "" );
+std::cerr << "AAA fsxpfront:GetRing:6" << std::endl; //AAA
 
   if( CurRing == NULL ) {
+std::cerr << "AAA fsxpfront:GetRing:6a" << std::endl; //AAA
     if( Verbose >= CallLevel )
       printf( "%*sfsxpfront:GetRing:6a\n", CallLevel, "" );
 
     return NULL;
   }
 
+std::cerr << "AAA fsxpfront:GetRing:7" << std::endl; //AAA
   if( Verbose >= CallLevel )
     printf( "%*sfsxpfront:GetRing:7 curplace=%ld\n", CallLevel, "", curplace );
   CallLevel--;
@@ -349,23 +356,35 @@ void CondenseRings( long RingNum )
 //============================================================================
 void SetNewFireNumber( long OldNum, long NewNum, long RefNum )
 { //SetNewFireNumber
+std::cerr << "AAA fsxpfront:SetNewFireNumber:1" << std::endl; //AAA
   bool found = false;
   long i;
   FireRing* ring;
 
+std::cerr << "AAA fsxpfront:SetNewFireNumber:2 GetNumRings()=" << GetNumRings() << std::endl; //AAA
   for( i = RefNum; i < GetNumRings(); i++ ) {
+std::cerr << "AAA fsxpfront:SetNewFireNumber:2a" << std::endl; //AAA
     ring = GetRing( i );
-    if( OldNum == ring->OriginalFireNumber ) {
+std::cerr << "AAA fsxpfront:SetNewFireNumber:2b" << std::endl; //AAA
+    //202004156 JWB: Chgd following
+    //               from 'if( OdNum == ring->OriginalFireNumber )' 
+    if( ring != NULL && OldNum == ring->OriginalFireNumber ) {
+std::cerr << "AAA fsxpfront:SetNewFireNumber:2b1" << std::endl; //AAA
       ring->OriginalFireNumber = NewNum;
+std::cerr << "AAA fsxpfront:SetNewFireNumber:2b2" << std::endl; //AAA
       found = true;
       break;
     }
+std::cerr << "AAA fsxpfront:SetNewFireNumber:2c" << std::endl; //AAA
   }
   if( ! found ) found = true; // for debugging
+std::cerr << "AAA fsxpfront:SetNewFireNumber:3" << std::endl; //AAA
 } //SetNewFireNumber
 
 //============================================================================
-void SetNumRings( long NewNumRings ) { NumRings = NewNumRings; }
+void SetNumRings( long NewNumRings ) {
+  NumRings = NewNumRings;
+}
 
 //============================================================================
 long GetNumRings() { return NumRings; }
@@ -902,8 +921,9 @@ long PostFrontal::AccessReferenceRingNum( long Merge, long Number )
             "ReferenceFireRunNum=%ld\n", CallLevel, "", ReferenceFireRingNum );
 
   if( Number < 0 ) {
-    printf( "%*sfsxpfront:PostFrontal::AccessReferenceRingNum:1a\n",
-            CallLevel, "" );
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxpfront:PostFrontal::AccessReferenceRingNum:1a\n",
+              CallLevel, "" );
     CallLevel--;
     if( Merge ) return MergeReferenceRingNum;
     else return ReferenceFireRingNum;
@@ -2363,7 +2383,7 @@ void PostFrontal::MergeFireRings( long* Fires, long NumPerims, long* isects,
       //Fix up firering because of new points added in
       //Intersect::OrganizeCrosses.
       //If point number is correct, then only check order of firering.
-      if( GetNumPoints(ring[i]->OriginalFireNumber) != ring[i]->NumPoints[0])
+      if( GetNumPoints(ring[i]->OriginalFireNumber) != ring[i]->NumPoints[0] )
         UpdateFireRing( ring[i], ring[i]->OriginalFireNumber,
                         GetNumPoints(ring[i]->OriginalFireNumber) );
       else UpdatePointOrder( ring[i], ring[i]->OriginalFireNumber );
