@@ -59,18 +59,16 @@ double GetPerimeter2Value( long coord, long value );
 void SetPerimeter2( long coord, double xpt, double ypt, double ros,
                     double fli, double rct );
 void SetPerimeter2( long coord, PerimeterPoint &Pt );
-double* AllocPerimeter2( long NumPoints );
+void AllocPerimeter2( long NumPoints );
 void FreePerimeter2();
-double* AllocPerimeter1( long NumFire, long NumPoints );
-void FreePerimeter1( long NumFire );
+void AllocPerimeter1( long NumFire, long NumPoints );
 double GetPerimeter1Value( long NumFire, long NumPoint, int coord );
 void GetPerimeter1Point( long NumFire, long NumPoint, PerimeterPoint *Pt );
 void SetPerimeter1( long NumFire, long NumPoint, double xpt, double ypt );
 void SetFireChx( long NumFire, long NumPoint, double ros, double fli );
 void SetReact( long NumFire, long NumPoint, double ReactionIntensity );
-double* GetPerimeter1Address( long NumFire, long NumPoint );
+void DeletePoint( long NumFire, long NumPoint );
 long SwapFirePerims( long NumFire1, long NumFire2 );
-long GetNumPerimAlloc();
 bool AllocFirePerims( long num );
 bool ReAllocFirePerims();
 void FreeAllFirePerims();
@@ -111,6 +109,5 @@ bool EnableStopLocation( long StopNum, long Action );
 long GetNumStopLocations();
 
 extern double RosRed[257];
-extern double *perimeter2;
 extern long numfires;  //Number of fires
 #endif    //FSXW_H
