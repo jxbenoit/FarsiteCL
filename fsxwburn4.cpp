@@ -5,6 +5,7 @@
   See LICENSE.TXT file for license information.
 */
 #include<string.h>
+#include<iostream>
 #include"globals.h"
 #include"fsx4.h"
 #include"fsxwattk.h"
@@ -87,6 +88,8 @@ void BurnThread::PerimeterThread()
   end = End;
   Started = true; //Means that the thread has been started
 
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1 End="
+//          << End << "\n";  ///AAA
   if( Verbose >= CallLevel )
     printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1 "
             "StillBurning=%d CanStillBurn=%d\n",
@@ -94,12 +97,15 @@ void BurnThread::PerimeterThread()
   do {
     if( End < 0 ) break;
 
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1a\n";
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1a\n", CallLevel, "" );
     if( CurrentFire >= 0 ) {
       if( turn == 0 ) distchek( CurrentFire );
       else if( DistanceCheckMethod(GETVAL) == 0 ) distchek( CurrentFire );
     }
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b begin="
+//          << begin << " end=" << end <<"\n";
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b begin=%ld end=%ld\n",
               CallLevel, "", begin, end );
@@ -109,48 +115,40 @@ void BurnThread::PerimeterThread()
     //FOR ALL POINTS ON EACH FIRE.
     for( CurrentPoint = begin; CurrentPoint < end; CurrentPoint++ ) {
       timerem = TimeIncrement;
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b1\n";
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b1 "
                 "timerem=%lf ld.fuel=%d\n",
                 CallLevel, "", timerem, ld.fuel );
       GetPoints( CurrentFire, CurrentPoint );
       Pos = fe->GetLandscapeData( xpt, ypt, ld );
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2\n";
       if( Verbose >= CallLevel ) {
         printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2 "
                 "(%lf, %lf) ld.fuel=%d ld.elev=%d sizeof(ld)=%ld "
                 "timerem=%lf\n",
                 CallLevel, "", xpt, ypt, ld.fuel, ld.fuel, sizeof(ld),
                 timerem );
-        printf( "%*s                                         "
-                "sizeof(celldata)=%ld\n", CallLevel, "", sizeof(celldata));
-        printf( "%*s                                         "
-                "sizeof(grounddata)=%ld\n", CallLevel, "", sizeof(grounddata));
-        printf( "%*s                                         "
-                "sizeof(crowndata)=%ld\n", CallLevel, "", sizeof(crowndata));
-        printf( "%*s                                         "
-                "sizeof(CanopyCharacteristics)=%ld\n", CallLevel, "",
-                sizeof(CanopyCharacteristics));
-        printf( "%*s                                         "
-                "sizeof(LandscapeStruct)=%ld\n", CallLevel, "",
-                sizeof(LandscapeStruct));
-        printf( "%*s                                                   "
+        printf( "%*s.................................................."
                 " ls.elev=%ld\n", CallLevel, "", (long)ld.elev );
-        printf( "%*s                                                   "
+        printf( "%*s.................................................."
                 " ls.slope=%ld\n", CallLevel, "", (long)ld.slope );
-        printf( "%*s                                                   "
+        printf( "%*s.................................................."
                 " ls.aspect=%ld\n", CallLevel, "", (long)ld.aspect );
-        printf( "%*s                                                   "
+        printf( "%*s.................................................."
                 " ls.fuel=%ld\n", CallLevel, "", (long)ld.fuel );
       }
 
       if( Pos <= 0 ) NumBadPositions++;  //JWB
 
       if( ld.fuel > 0 && ld.elev != -9999 ) {  //If not a rock or lake etc.
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2a\n";
         if( Verbose >= CallLevel )
           printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2a\n",
                   CallLevel, "" );
 
         fli = FliFinal = oldfli = GetPerimeter2Value( CurrentPoint, FLIVAL );
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2b\n";
         if( Verbose >= CallLevel )
           printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2b\n",
                   CallLevel, "" );
@@ -181,20 +179,24 @@ void BurnThread::PerimeterThread()
         }
         else ComputeSpread = true;
 
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c\n";
         if( Verbose >= CallLevel )
           printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c\n",
                   CallLevel, "" );
         if( ComputeSpread ) {
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c1\n";
           if( Verbose >= CallLevel )
             printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c1\n",
                     CallLevel, "" );
           EmberCoords();        //Compute ember source coordinates
           CanStillBurn = true;  //Has fuel, can still burn
 
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c2\n";
           if( Verbose >= CallLevel )
             printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c2\n",
                     CallLevel, "" );
           fe->GetFireEnvironment( env, SIMTIME + SimTimeOffset, false );
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c3\n";
           if( Verbose >= CallLevel )
             printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c3\n",
                     CallLevel, "" );
@@ -202,6 +204,7 @@ void BurnThread::PerimeterThread()
           if( EventMinimumTimeStep(GETVAL) < EventTimeStep &&
               EventMinimumTimeStep(GETVAL) > 0.0 )
             EventTimeStep = EventMinimumTimeStep( GETVAL );
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c4\n";
           if( Verbose >= CallLevel )
             printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c4\n",
                     CallLevel, "" );
@@ -210,6 +213,7 @@ void BurnThread::PerimeterThread()
           NormalizeDirectionWithLocalSlope();
           //Get forward ROS from last timestep or last substep.
           RosT = GetPerimeter2Value( CurrentPoint, ROSVAL );
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c5\n";
           if( Verbose >= CallLevel )
             printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c5\n",
                     CallLevel, "" );
@@ -220,6 +224,7 @@ void BurnThread::PerimeterThread()
             FliFinal *= -1.0;
             react = 0.0;
           }
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c6\n";
           if( Verbose >= CallLevel )
             printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c6\n",
                     CallLevel, "" );
@@ -228,6 +233,7 @@ void BurnThread::PerimeterThread()
             CrownFire();  //If turn==1 then start try spot fires, else no
           else cf.CrownLoadingBurned = 0.0;
 
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2c7\n";
           if( Verbose >= CallLevel )
             printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2c7 "
                     "timerem=%lf\n", CallLevel, "", timerem );
@@ -238,6 +244,7 @@ void BurnThread::PerimeterThread()
                                    //MEANS FASTEST SPREAD RATE
         }
         else RosT1 = RosT = GetPerimeter2Value( CurrentPoint, ROSVAL );
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b2d\n";
         if( Verbose >= CallLevel )
           printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b2d\n",
                   CallLevel, "" );
@@ -247,6 +254,7 @@ void BurnThread::PerimeterThread()
         fli = FliFinal = 0.0;
         react = 0.0;
       }
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b3\n";
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1b3\n",
                 CallLevel, "" );
@@ -255,11 +263,14 @@ void BurnThread::PerimeterThread()
         if( FireIsUnderAttack && ! ComputeSpread ) FliFinal *= -1.0;
         prod.cuumslope[0] += ( double ) ld.slope;  //CUMULATIVE SLOPE ANGLES
         prod.cuumslope[1] += 1;  //CUMULATIVE NUMBER OF PERIMETER POINTS
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b3a\n";
         SetPerimeter1( CurrentFire, CurrentPoint, xpt, ypt );
         SetFireChx( CurrentFire, CurrentPoint, RosT1, FliFinal );
         SetReact( CurrentFire, CurrentPoint, react );
 
          //Beginning of timestep.
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1b3b "
+//          << GetPerimeter1AValue(CurrentFire, CurrentPoint, PerimeterPoint::X_VAL) << "\n";
         if( DistanceCheckMethod(GETVAL) == 1 && CuumTimeIncrement == 0.0 )
           SetElev( CurrentPoint, ld.elev );
 
@@ -274,6 +285,7 @@ void BurnThread::PerimeterThread()
       }
     }
 
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1c\n";
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1c "
               "StillBurning=%d CanStillBurn=%d\n",
@@ -288,6 +300,7 @@ void BurnThread::PerimeterThread()
     prod.cuumslope[1] = 0;
     begin = Begin;  //Restore local copies from Class data
     end = End;
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1d\n";
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1d\n", CallLevel, "" );
 
@@ -304,11 +317,13 @@ void BurnThread::PerimeterThread()
       end = 0;
       DoSpots = false;
     }
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 1e\n";
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:BurnThread:PerimeterThread:1e\n", CallLevel, "" );
 
     break; //Eliminate if multithreading is restored
   } while( End > -1 );
+//std::cerr << "AAA fsxwburn4:BurnThread:PerimeterThread: 2\n";  ///AAA
   if( Verbose >= CallLevel )
     printf( "%*sfsxwburn4:BurnThread:PerimeterThread:2 "
             "StillBurning=%d CanStillBurn=%d\n",
@@ -675,6 +690,7 @@ void Burn::BurnMethod1()
   AttackData* atk;    //Pointer to AttackData struct
   Attack Atk;         //Instance of Attack
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 1\n";  ///AAA
   if( Verbose >= CallLevel )
     printf( "%*sfsxwburn4:Burn:BurnMethod1:1 SIMTIME=%lf\n",
             CallLevel, "", SIMTIME );
@@ -685,10 +701,13 @@ void Burn::BurnMethod1()
   CanStillBurn = false;     //Must test to see if fire is still active
   InitRect( CurrentFire );  //Resets hi's and lo's for bounding rectangle
   TimeIncrement = EventTimeStep = GetActualTimeStep();
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 1.5\n";  ///AAA
   CuumTimeIncrement = 0.0;
   AllocElev( CurrentFire );  //Alloc space for elevations
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 1.75\n";  ///AAA
   tranz( CurrentFire, 0 );   //Transfer pts to perimeter2 array for next turn
   TimeMaxRem = 0.0;          //Maximum time remaining
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 2\n";  ///AAA
   if( Verbose >= CallLevel )
     printf( "%*sfsxwburn4:Burn:BurnMethod1:2\n", CallLevel, "" );
 
@@ -707,11 +726,13 @@ void Burn::BurnMethod1()
     gaat = 0;
   }
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 3\n";  ///AAA
   if( Verbose >= CallLevel )
     printf( "%*sfsxwburn4:Burn:BurnMethod1:4 CuumTimeIncrement=%lf\n",
             CallLevel, "", CuumTimeIncrement );
 
   do {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4a\n";  ///AAA
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:Burn:BurnMethod1:4a StillBurning=%d "
               "numpts[%ld]=%ld numfires=%ld\n",
@@ -721,6 +742,7 @@ void Burn::BurnMethod1()
     if( GetInout(CurrentFire) == 3 ) {
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4a1\n", CallLevel, "" );
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4a1\n";  ///AAA
       CrossFires( 0, &CurrentFire );
       CanStillBurn = true;
       TimeIncrement = 0.0;
@@ -728,6 +750,7 @@ void Burn::BurnMethod1()
       break;
     }
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4b\n";  ///AAA
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:Burn:BurnMethod1:4b StillBurning=%d "
               "TimeIncrement=%lf EventTimeStep=%lf CuumTimeIncrement=%lf "
@@ -754,19 +777,23 @@ void Burn::BurnMethod1()
     //Multithreading stuff.
     NumStartAttack = 0;
     if( Turn == 0 ) {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4b1\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4b1\n", CallLevel, "" );
       env->CheckMoistureTimes( SIMTIME + CuumTimeIncrement );
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4b2\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4b2\n", CallLevel, "" );
 
       ThreadCount = StartPerimeterThreads_Equal();
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4b3\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4b3 "
                 "burnthread[0]->StillBurning=%d\n",
                 CallLevel, "", burnthread[0]->StillBurning );
     }
     else {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4b4\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4b4 "
                 "burnthread[0]->StillBurning=%d\n",
@@ -796,6 +823,7 @@ void Burn::BurnMethod1()
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4b7\n", CallLevel, "" );
     }
     //------------------------------------------------------------------------
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c\n";  ///AAA
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:Burn:BurnMethod1:4c "
               "StillBurning=%d TimeIncrement=%lf numpts[%ld]=%ld\n",
@@ -803,6 +831,7 @@ void Burn::BurnMethod1()
               CurrentFire, GetNumPoints(CurrentFire) );
 
     if( Turn ) {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c1\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4c1\n", CallLevel, "" );
 
@@ -811,6 +840,7 @@ void Burn::BurnMethod1()
         ypt = GetPerimeter1Value( CurrentFire, i, YCOORD );
         DetermineHiLo( xpt, ypt );
       }
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c2\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4c2\n", CallLevel, "" );
 
@@ -823,6 +853,7 @@ void Burn::BurnMethod1()
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4c3\n", CallLevel, "" );
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c3\n";  ///AAA
       NewFires = GetNewFires();
       while( (atk = GetAttackForFireNumber(CurrentFire, NumStartAttack,
                                            &NumLastAttack)) != 0 ) {
@@ -838,6 +869,7 @@ void Burn::BurnMethod1()
         else if( ! Atk.DirectAttack(atk, TimeIncrement + DownTime) )
           CancelAttack( atk->AttackNumber );
       }
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c4\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4c4\n", CallLevel, "" );
 
@@ -860,13 +892,15 @@ void Burn::BurnMethod1()
           gaat->ExecuteAttacks( 0.0 ); //For each aircraft,
         }     //execute, but if not==TimeIncrement, just dec waittimes
       }
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c4.5\n";  ///AAA
 
       WriteHiLo( CurrentFire );
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c4.75\n";  ///AAA
       if( FireIsUnderAttack ) {
         RestoreDeadPoints( CurrentFire );
-        BoundingBox( CurrentFire );
       }
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c5\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4c5 StillBurning=%d "
                 "numpts[%ld]=%ld\n",
@@ -875,6 +909,7 @@ void Burn::BurnMethod1()
 
       //If inward fire not eliminated && still burning....
       if( GetInout(CurrentFire) != 0 && StillBurning ) {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c5a\n";  ///AAA
         if( Verbose >= CallLevel )
           printf( "%*sfsxwburn4:Burn:BurnMethod1:4c5a\n",
                   CallLevel, "" );
@@ -883,6 +918,7 @@ void Burn::BurnMethod1()
           rast.rasterinit( CurrentFire, 0, SIMTIME, TimeIncrement,
                            CuumTimeIncrement + TimeIncrement );
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c5b\n";  ///AAA
         if( Verbose >= CallLevel )
           printf( "%*sfsxwburn4:Burn:BurnMethod1:4c5b "
                   "\n",
@@ -897,7 +933,6 @@ void Burn::BurnMethod1()
             ReorderPerimeter( NewFires, FindExternalPoint(NewFires, 0) );
             FindOuterFirePerimeter( NewFires );
             NewPts = GetNumPoints( NewFires );
-            FreePerimeter1( NewFires );
             if( NewPts > 0 ) {
               AllocPerimeter1( NewFires, NewPts + 1 );
               tranz( NewFires, NewPts );
@@ -911,6 +946,7 @@ void Burn::BurnMethod1()
           }
         }
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c5c\n";  ///AAA
         if( Verbose >= CallLevel )
           printf( "%*sfsxwburn4:Burn:BurnMethod1:4c5c "
                   "numpts[%ld]=%ld\n",
@@ -951,6 +987,7 @@ void Burn::BurnMethod1()
           }
         }
       }
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c6\n";  ///AAA
       if( Verbose >= CallLevel )
         printf( "%*sfsxwburn4:Burn:BurnMethod1:4c6\n", CallLevel, "" );
 
@@ -958,6 +995,7 @@ void Burn::BurnMethod1()
 
       //If inward fire has now been eliminated....
       if( GetInout(CurrentFire) == 0 || ! StillBurning ) {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c6a\n";  ///AAA
         if( FireType == 2 && StillBurning ) {   //Inward fire was extinguished
           if( rastmake )  //Make rasterizing accurate to the nearest time step
             rast.rasterinit( CurrentFire, ExNumPts, SIMTIME,
@@ -967,6 +1005,7 @@ void Burn::BurnMethod1()
         TimeIncrement = 0.0;  //Zero time left in timestep
       }
       else {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4c6b\n";  ///AAA
         TimeIncrement = GetActualTimeStep() - CuumTimeIncrement;
         EventTimeStep = TimeIncrement;  //Reset Event drivent Time Step
         //Transfer points to perimeter2 array for next turn.
@@ -1020,6 +1059,7 @@ void Burn::BurnMethod1()
                 CallLevel, "", TimeIncrement );
     }
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4d\n";  ///AAA
     if( Verbose >= CallLevel )
       printf( "%*sfsxwburn4:Burn:BurnMethod1:4d "
               "SIMTIME=%lf TimeIncrement=%lf numpts[%ld]=%ld\n",
@@ -1028,6 +1068,7 @@ void Burn::BurnMethod1()
 
     TimeMaxRem = 0.0;
     if( TimeIncrement == 0.0 && NumInFires > InFiresBurned ) {
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 4d1\n";  ///AAA
       do {
         //AAA if (InFiresBurned <= NumInFires)  //JAS! was strictly <  JAS!
         if( InFiresBurned < NumInFires ) {  //BLN original  In FromG5 ver
@@ -1052,6 +1093,7 @@ void Burn::BurnMethod1()
     }
   } while( TimeIncrement > 0.0 );  //While time remaining in time step
 
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod1: 5\n";  ///AAA
   if( Verbose >= CallLevel )
     printf( "%*sfsxwburn4:Burn:BurnMethod1:5 CuumTimeIncrement=%lf\n",
             CallLevel, "", CuumTimeIncrement );
@@ -1147,6 +1189,7 @@ void Burn::BurnMethod2()
 
   if( Verbose > CallLevel )
     printf( "%*sfsxwburn4:Burn:BurnMethod2:1\n", CallLevel, "" );
+//std::cerr << "AAA fsxwburn4:Burn:BurnMethod2: 1\n";  ///AAA
 
   //Simulation-level process control, uses time step determind by PreBurn().
   long NewFires;
@@ -1275,7 +1318,6 @@ void Burn::BurnMethod2()
         ReorderPerimeter( NewFires, FindExternalPoint(NewFires, 0) );
         FindOuterFirePerimeter( NewFires );
         NewPts = GetNumPoints( NewFires );
-        FreePerimeter1( NewFires );
         if( NewPts > 0 ) {
           AllocPerimeter1( NewFires, NewPts + 1 );
           tranz( NewFires, NewPts );
@@ -1398,7 +1440,6 @@ void Burn::EliminateFire(long FireNum)
 	// removes a fire, and cleans up memory for it
 	SetNumPoints(FireNum, 0);  		// reset number of points
 	SetInout(FireNum, 0);     	 	// reset inward/outward indicator
-	FreePerimeter1(FireNum);			// free perimeter array
 	IncSkipFires(1);			  	// increment number of extinquished fires
 }
 
