@@ -6,7 +6,7 @@
 
   Based on Version 4.1.0 (12/21/2004) by Mark Finney.
 
-  Revisions by John Benoit - Apr 2010
+  Revisions by John Benoit - Apr 2020
 
   See LICENSE.TXT file for license information.
   ============================================================================
@@ -14,7 +14,6 @@
 /*============================================================================
   Point
   This class describes a 2-dimensional point.
-  * Data members are purposely made public for increased speed.
 */
 #ifndef POINT_H
 #define POINT_H
@@ -26,19 +25,21 @@
 
 class Point
 { //Point
-public:
-  double x, y;
+  private:
+    double X, Y;
 
-  Point();
-  Point( double x, double y );
-  int    GetOrientation( Point &PA, Point &PB );
-  double CalcDist( Point &P );
-  double CalcDistSq( Point &P );
-  //Sep2010: Below: first version okay on MacBook, but g++ in Ubuntu likes the
-  //'unqualified' version. If you compile with the first version of the line,
-  //g++ complains: 'extra qualification ... on member ...'.
-  //Point& Point::operator=( const Point &RHS ); 
-  Point& operator=( const Point &RHS );
+  public:
+    Point();
+    Point( double X, double Y );
+    ~Point();
+    int    GetOrientation( Point &PA, Point &PB );
+    double CalcDist( Point &P );
+    double CalcDistSq( Point &P );
+    Point& operator=( const Point *RHS );
+    Point& operator=( const Point &RHS );
+    double GetX() { return X; }
+    double GetY() { return Y; }
+    void   Set( double X, double Y );
 };//Point
 
 #endif

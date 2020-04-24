@@ -12,17 +12,30 @@
   ============================================================================
 */
 #include<math.h> //For sqrt
+#include<iostream> //For sqrt
 #include"Point.h"
 
 //============================================================================
-Point::Point() { x = y = 0.0; }
+Point::Point() { X = Y = 0.0; }
 
 //============================================================================
-Point::Point( double x, double y )
+Point::Point( double X, double Y )
 { //Point::Point
-  this->x = x;
-  this->y = y;
+  this->X = X;
+  this->Y = Y;
 } //Point::Point
+
+//============================================================================
+void Point::Set( double X, double Y )
+{ //Point::Set
+  this->X = X;
+  this->Y = Y;
+} //Point::Set
+//
+//============================================================================
+Point::~Point()
+{ //Point::~Point
+} //Point::~Point
 
 /*============================================================================
   Point::GetOrientation
@@ -38,8 +51,8 @@ Point::Point( double x, double y )
 */
 int Point::GetOrientation( Point &PA, Point &PB )
 { //Point::GetOrientation
-  double Ax = PA.x - x, Ay = PA.y - y;
-  double Bx = PB.x - x, By = PB.y - y;
+  double Ax = PA.X - X, Ay = PA.Y - Y;
+  double Bx = PB.X - X, By = PB.Y - Y;
 
   double det = Ax * By - Ay * Bx;
   if( det > POINT_EPSILON ) return POINT_COUNTERCLOCKWISE;
@@ -53,8 +66,8 @@ int Point::GetOrientation( Point &PA, Point &PB )
 */
 double Point::CalcDist( Point &P )
 { //Point::CalcDist
-  double xdiff = P.x - x;
-  double ydiff = P.y - y;
+  double xdiff = P.X - X;
+  double ydiff = P.Y - Y;
 
   return sqrt( xdiff * xdiff + ydiff * ydiff );
 } //Point::CalcDist
@@ -65,8 +78,8 @@ double Point::CalcDist( Point &P )
 */
 double Point::CalcDistSq( Point &P )
 { //Point::CalcDistSq
-  double xdiff = P.x - x;
-  double ydiff = P.y - y;
+  double xdiff = P.X - X;
+  double ydiff = P.Y - Y;
 
   return xdiff * xdiff + ydiff * ydiff;
 } //Point::CalcDistSq
@@ -74,8 +87,17 @@ double Point::CalcDistSq( Point &P )
 //============================================================================
 Point& Point::operator=( const Point &RHS )
 { //Point::operator=
-  this->x = RHS.x;
-  this->y = RHS.y;
+  this->X = RHS.X;
+  this->Y = RHS.Y;
+
+  return *this;
+} //Point::operator=
+//
+//============================================================================
+Point& Point::operator=( const Point *RHS )
+{ //Point::operator=
+  this->X = RHS->X;
+  this->Y = RHS->Y;
 
   return *this;
 } //Point::operator=
