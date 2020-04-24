@@ -14,6 +14,7 @@
 */
 #include<sys/stat.h>
 #include<string.h>
+#include<iostream>
 #include"globals.h"
 #include"farsite4.h"
 #include"portablestrings.h"
@@ -29,6 +30,7 @@ FILE* CurrentFile;  //Global file pointer, for landscape file
 //============================================================================
 TFarsiteInterface::TFarsiteInterface( const char* farsitedirectory )
 { //TFarsiteInterface::TFarsiteInterface
+std::cout << "TFarsiteInterface::TFarsiteInterface 1" << std::endl; //AAA
   NumSimThreads = 0;
   SimRequest = SIMREQ_NULL;
   SIM_SUSPENDED = false;
@@ -78,6 +80,7 @@ TFarsiteInterface::TFarsiteInterface( const char* farsitedirectory )
   //Keep perimeter res bigger than distance res!
   SetPerimRes( 90.0 * metric_convert );
   SetDistRes( 60.0 * metric_convert );
+std::cout << "TFarsiteInterface::TFarsiteInterface 2" << std::endl; //AAA
 } //TFarsiteInterface::TFarsiteInterface
 
 //============================================================================
@@ -92,14 +95,17 @@ bool TFarsiteInterface::SetInputsFromFile( char* settingsfilename )
   char* name;
   char* value;
 
+std::cout << "TFarsiteInterface::SetInputesFromFile 1" << std::endl; //AAA
   FILE* IN = fopen( settingsfilename, "r" );
   if( ! IN ) {
     printf( "## Cannot open %s ##\n", settingsfilename );
     CallLevel--;
+std::cout << "TFarsiteInterface::SetInputesFromFile 2" << std::endl; //AAA
     return false;
   }
 
   Inputs.ResetData();
+std::cout << "TFarsiteInterface::SetInputesFromFile 3" << std::endl; //AAA
  
   if( Verbose > CallLevel )
     printf( "%*sfarsite4:TFarsiteInterface::SetInputsFromFile:1\n",
@@ -131,6 +137,7 @@ bool TFarsiteInterface::SetInputsFromFile( char* settingsfilename )
 
     ProcessNameValue( name, value );
   }
+std::cout << "TFarsiteInterface::SetInputesFromFile 4" << std::endl; //AAA
 
   fclose( IN );
 
@@ -139,11 +146,13 @@ bool TFarsiteInterface::SetInputsFromFile( char* settingsfilename )
             CallLevel, "" );
 
   bool bValid = ValidateSettings();
+std::cout << "TFarsiteInterface::SetInputesFromFile 5" << std::endl; //AAA
   if( bValid ) {
     SetSimulationDuration( 0 );  //Reset Duration
     SetStartDate( GetJulianDays(StartMonth) + StartDay + StartHour );
     bValid = Execute_InitiateTerminate();
   }
+std::cout << "TFarsiteInterface::SetInputesFromFile 6" << std::endl; //AAA
 
   CallLevel--;
 
@@ -727,6 +736,7 @@ bool TFarsiteInterface::Execute_InitiateTerminate()
 //============================================================================
 void TFarsiteInterface::FlatOpenProject()
 { //TFarsiteInterface::FlatOpenProject
+std::cout << "TFarsiteInterface::FlatOpenProject 1" << std::endl; //AAA
   CallLevel++;
 
   if( Verbose > CallLevel )
@@ -747,6 +757,7 @@ void TFarsiteInterface::FlatOpenProject()
             CallLevel, "" );
 
   CallLevel--;
+std::cout << "TFarsiteInterface::FlatOpenProject 2" << std::endl; //AAA
 } //TFarsiteInterface::FlatOpenProject
 
 /*============================================================================
@@ -766,6 +777,7 @@ void TFarsiteInterface::Execute_StartRestart()
   }
 
   if( RealFires > 0 ) {
+std::cout << "TFarsiteInterface::Execute_StartRestart 1" << std::endl; //AAA
     if( SimulationDuration == 0.0 ) {
       StepThrough = false;
       printf( "## No Duration set for simulation ##\n" );
@@ -802,6 +814,9 @@ void TFarsiteInterface::Execute_StartRestart()
         }
       }
 
+      if( Verbose > CallLevel )
+        printf( "%*sfarsite4:TFarsiteInterface::Execute_StartRestart:2 "
+                "\n", CallLevel, "" );
       if( HaveGroundFuels() ) {
         if( GetTheme_Units(W_DATA) != 0 && Inputs.CwdID == false &&
             CheckPostFrontal(GETVAL) ) {
@@ -811,6 +826,9 @@ void TFarsiteInterface::Execute_StartRestart()
           return;
         }
       }
+      if( Verbose > CallLevel )
+        printf( "%*sfarsite4:TFarsiteInterface::Execute_StartRestart:3 "
+                "\n", CallLevel, "" );
 
       SaveIgnitions();
       SIMULATE_GO = true;
@@ -820,6 +838,9 @@ void TFarsiteInterface::Execute_StartRestart()
       maximum = 0;
       numspots = 0;
       ProcNum = 1;    //First process can begin
+      if( Verbose > CallLevel )
+        printf( "%*sfarsite4:TFarsiteInterface::Execute_StartRestart:4 "
+                "\n", CallLevel, "" );
       //Set distance check method.
       burn.DistMethod = DistanceCheckMethod( GETVAL );
       AddDownTime( -1.0 );    //Set down time to 0.0;
@@ -828,16 +849,17 @@ void TFarsiteInterface::Execute_StartRestart()
       smolder = flaming = 0.0;
 
       if( Verbose > CallLevel )
-        printf( "%*sfarsite4:TFarsiteInterface::Execute_StartRestart:2 "
+        printf( "%*sfarsite4:TFarsiteInterface::Execute_StartRestart:5 "
                 "Starting Farsite simulation loop ....\n", CallLevel, "" );
 
       //Start FARSITE process and check message loop between iterations.
       FarsiteSimulationLoop();
 
       if( Verbose > CallLevel )
-        printf( "%*sfarsite4:TFarsiteInterface::Execute_StartRestart:3 "
+        printf( "%*sfarsite4:TFarsiteInterface::Execute_StartRestart:6 "
                 "Exited Farsite simulation loop.\n", CallLevel, "" );
     }
+std::cout << "TFarsiteInterface::Execute_StartRestart 2" << std::endl; //AAA
   }
   else {
     StepThrough = false;
@@ -920,23 +942,27 @@ void TFarsiteInterface::FarsiteSimulationLoop()
             CallLevel, "" );
 
   CheckSteps();    //Check visual and actual timestep for changes
+  if( Verbose > CallLevel )
+    printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2 "
+            "maximum=%ld\n", CallLevel, "", maximum );
 
   while( burn.SIMTIME <= maximum ) {
     if( Verbose > CallLevel )
-      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2 "
-              "Sim time = %f\n", CallLevel, "", burn.SIMTIME );
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2a "
+              "burn.SIMTIME=%f maximum=%ld\n", CallLevel, "",
+              burn.SIMTIME, maximum );
 
     if( SimRequest != SIMREQ_NULL ) break;
 
     CheckSteps();
 
     if( Verbose > CallLevel )
-      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3 "
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b "
               "\n", CallLevel, "" );
 
     if( FARSITE_GO ) {
       if( Verbose > CallLevel )
-        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3a "
+        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b1 "
                 "\n", CallLevel, "" );
 
       PreCalculateFuelMoisturesNoUI();
@@ -946,25 +972,27 @@ void TFarsiteInterface::FarsiteSimulationLoop()
         continue;
       }
       if( Verbose > CallLevel )
-        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3b "
+        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b2 "
                 "\n", CallLevel, "" );
 
       if( ProcNum < 3 ) {  //If all inputs ready for FARSITE model
         if( NextFireAfterInterrupt == 0 ) CountFires();
         if( Verbose > CallLevel )
-          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3b1 "
+          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b2a "
                   "ProcNum=%d\n", CallLevel, "", ProcNum );
         if( ProcNum == 1 ) {
           if( FarsiteProcess1() ) {  //Do another iteration of FARSITE process
             if( Verbose > CallLevel )
               printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:"
-                      "3b1a Total area burned = %f\n", CallLevel, "",
+                      "2b2a1 Total area burned = %f\n", CallLevel, "",
                       TotalAreaBurned );
 
             while( FarsiteProcess2() )
               { if( ! FarsiteProcessSpots() ) break; }
           }
-          else break;
+          else {
+            break;
+          }
         }
         else if( ProcNum == 2 ) {
           if( FarsiteProcessSpots() ) {
@@ -974,17 +1002,15 @@ void TFarsiteInterface::FarsiteSimulationLoop()
         }
       }
       if( Verbose > CallLevel )
-        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3c "
+        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b3 "
                 "\n", CallLevel, "" );
 
-      if( Verbose > CallLevel )
-        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3d "
-                "\n", CallLevel, "" );
       if( ProcNum == 3 ) {
         if( Verbose > CallLevel )
-          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3d1 "
+          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b3a "
                   "\n", CallLevel, "" );
         FarsiteProcess3();  //Mergers between fires and increment iteration
+
         ProcNum = 1;
         if( ! OutputVectsAsGrown && NextFireAfterInterrupt == 0 ) {
           for( CurrentFire = 0; CurrentFire < GetNumFires(); CurrentFire++ ) {
@@ -994,7 +1020,7 @@ void TFarsiteInterface::FarsiteSimulationLoop()
           }
         }
         if( Verbose > CallLevel )
-          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3d2 "
+          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b3b "
                   "\n", CallLevel, "" );
 
         if( NextFireAfterInterrupt == 0 ) {
@@ -1039,14 +1065,14 @@ void TFarsiteInterface::FarsiteSimulationLoop()
           else SecondaryVisCount = 1;
         }
         if( Verbose > CallLevel )
-          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3d3 "
+          printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2b3c "
                   "\n", CallLevel, "" );
       }
     }
     else break;   //Check visual and actual timesteps for changes
 
     if( Verbose > CallLevel )
-      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:4 "
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2c "
               "Sim time = %f maximum=%ld\n",
               CallLevel, "", burn.SIMTIME, maximum );
 
@@ -1056,7 +1082,7 @@ void TFarsiteInterface::FarsiteSimulationLoop()
       if( GetVectMake() ) WriteGISLogFile( 1 );
       if( GetShapeMake() ) WriteGISLogFile( 2 );
       if( Verbose > CallLevel )
-        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:4a "
+        printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2c1 "
                 "SIMULATION COMPLETED\n", CallLevel, "" );
       SimRequest = SIMREQ_NULL;
       SIM_SUSPENDED = true;
@@ -1066,13 +1092,13 @@ void TFarsiteInterface::FarsiteSimulationLoop()
     }
 
     if( Verbose > CallLevel )
-      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:5 "
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:2d "
               "Sim time = %f maximum=%ld\n",
               CallLevel, "", burn.SIMTIME, maximum );
   }  //End while loop
 
   if( Verbose > CallLevel )
-    printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:6 "
+    printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3 "
             "Exited main loop\n", CallLevel, "" );
 
   if( gaat ) delete gaat;
@@ -1092,7 +1118,7 @@ void TFarsiteInterface::FarsiteSimulationLoop()
     if( GetVectMake() ) WriteGISLogFile( 1 );
     if( GetShapeMake() ) WriteGISLogFile( 2 );
     if( Verbose > CallLevel )
-      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:7 "
+      printf( "%*sfarsite4:TFarsiteInterface::FarsiteSimulationLoop:3a "
               "SIMULATION COMPLETED\n", CallLevel, "" );
   }
 
@@ -1218,7 +1244,6 @@ void TFarsiteInterface::WriteGISLogFile( long LogType )
 			GetPerimRes());
 		fprintf(logfile, "%s %lf\n", "Distance Resolution (m):", GetDistRes());
 		fclose(logfile);
-		//free(LogFile);
 }
 
 /*============================================================================
@@ -1227,6 +1252,10 @@ void TFarsiteInterface::WriteGISLogFile( long LogType )
 */
 void TFarsiteInterface::SaveIgnitions()
 { //TFarsiteInterface::SaveIgnitions
+  CallLevel++;
+  if( Verbose > CallLevel )
+    printf( "%*sfarsite4:TFarsiteInterface::SaveIgnitions:1\n",
+            CallLevel, "" );
   long i, j, k;
   double xpt, ypt, ros, fli;
   FILE* IgFile;
@@ -1256,6 +1285,11 @@ void TFarsiteInterface::SaveIgnitions()
   else
     printf( "## Check File Attributes and Change From 'READ ONLY'!"
             " Could Not Write File ##\n" );
+
+  if( Verbose > CallLevel )
+    printf( "%*sfarsite4:TFarsiteInterface::SaveIgnitions:2\n",
+            CallLevel, "" );
+  CallLevel--;
 } //TFarsiteInterface::SaveIgnitions
 
 /*============================================================================
@@ -1627,7 +1661,6 @@ long TFarsiteInterface::InsertSpotFire(double xpt, double ypt)
 	}
 	if (OutsideX != -1.0 || OutsideY != -1.0)
 	{
-		FreePerimeter1(newspots);
 		newspots = -1;
 	}
 	else
@@ -1719,7 +1752,6 @@ void TFarsiteInterface::FarsiteProcess3()
                                burn.FindExternalPoint(NewFires, 0) );
         burn.FindOuterFirePerimeter( NewFires );
         NewPts = GetNumPoints( NewFires );
-        FreePerimeter1( NewFires );
         if( NewPts > 0 ) {
           AllocPerimeter1( NewFires, NewPts + 1 );
           burn.tranz( NewFires, NewPts );
@@ -1753,7 +1785,6 @@ void TFarsiteInterface::FarsiteProcess3()
     aatk = GetAirAttackByOrder( i );
     if( ! AAtk.CheckEffectiveness(aatk, GetActualTimeStep()) ) {
       --aatk->PatternNumber;
-      FreePerimeter1( aatk->PatternNumber );
       SetNumPoints( aatk->PatternNumber, 0 );
       SetInout( aatk->PatternNumber, 0 );
       IncSkipFires( 1 );
@@ -1787,6 +1818,7 @@ void TFarsiteInterface::FarsiteProcess3()
       burn.CrossFires( 1, &CurrentFire );
       SetNumFires( GetNewFires() );
     }
+
     CheckStopLocations();
   }
 
