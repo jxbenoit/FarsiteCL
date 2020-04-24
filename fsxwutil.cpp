@@ -9,6 +9,7 @@
   ============================================================================
 */
 #include<string.h>
+#include<iostream>
 #include"globals.h"
 #include"fsglbvar.h"
 #include"fsxwattk.h"
@@ -415,31 +416,31 @@ bool CompareRect::YOverlap()
 	return RectOverlap;
 }
 
-
+//============================================================================
 Intersections::Intersections()
-{
-	crossout = 0;
-	intersect = 0;
-	interpoint = 0;
-	crossnumalloc = 0;
-	intersectnumalloc = 0;
-	interpointnumalloc = 0;
-	newisectnumalloc = 0;
-	NewIsect = 0;
-	AltIsect = 0;
-	NumCrossThreads = 0;
-	crossthread = 0;
-}
+{ //Intersections::Intersections
+  crossout = 0;
+  intersect = 0;
+  interpoint = 0;
+  crossnumalloc = 0;
+  intersectnumalloc = 0;
+  interpointnumalloc = 0;
+  newisectnumalloc = 0;
+  NewIsect = 0;
+  AltIsect = 0;
+  NumCrossThreads = 0;
+  crossthread = 0;
+} //Intersections::Intersections
 
-
+//============================================================================
 Intersections::~Intersections()
-{
-	FreeCrossout();
-	FreeInterPoint();
-	FreeIntersection();
-	FreeNewIntersection();
-	CloseCrossThreads();
-}
+{ //Intersections::~Intersections
+  FreeCrossout();
+  FreeInterPoint();
+  FreeIntersection();
+  FreeNewIntersection();
+  CloseCrossThreads();
+} //Intersections::~Intersections
 
 
 void Intersections::ResetIntersectionArrays()
@@ -518,82 +519,61 @@ void CompareRect::ExchangeRect(long FireNum)
 }
 
 
-void Intersections::AllocIntersection(long Number)
-{
-	// allocate intersetion points array
-	if (Number <= 0)
-		return;
+//============================================================================
+void Intersections::AllocIntersection( long Number )
+{ //Intersections::AllocIntersection
+  //Allocate intersetion points array.
+  if( Number <= 0 ) return;
 
-	if (Number >= intersectnumalloc)
-	{
-		FreeIntersection();
-		nmemb = 2 * Number;
-		if ((intersect = new long[nmemb]) == NULL)
-			intersect = 0;
-		else
-		{
-			intersectnumalloc = Number;
-//			ZeroMemory(intersect, nmemb * sizeof(long));
-			memset(intersect,0x0, nmemb * sizeof(long));
-		}
-	}
-	else
-	{
-//		ZeroMemory(intersect, intersectnumalloc * 2 * sizeof(long));
-		memset(intersect,0x0, intersectnumalloc * 2 * sizeof(long));
-		//for(long i=0; i<intersectnumalloc; i++)
-		//{	intersect[i*2]=0;
-		//     intersect[i*2+1]=0;
-		//}
-	}
-}
+  if( Number >= intersectnumalloc ) {
+    FreeIntersection();
+    nmemb = 2 * Number;
+    if( (intersect = new long[nmemb]) == NULL )
+      intersect = 0;
+    else {
+      intersectnumalloc = Number;
+      memset( intersect, 0x0, nmemb * sizeof(long) );
+    }
+  }
+  else
+    memset( intersect, 0x0, intersectnumalloc * 2 * sizeof(long) );
+} //Intersections::AllocIntersection
 
+//============================================================================
 void Intersections::FreeIntersection()
-{
-	if (intersect)
-		delete[] intersect;//GlobalFree(intersect);
-	intersect = 0;
-	intersectnumalloc = 0;
-}
+{ //Intersections::FreeIntesection
+  if( intersect )
+    delete [] intersect;
+  intersect = 0;
+  intersectnumalloc = 0;
+} //Intersections::FreeIntesection
 
-void Intersections::AllocInterPoint(long Number)
-{
-	if (Number <= 0)
-		return;
+//============================================================================
+void Intersections::AllocInterPoint( long Number )
+{ //Intersections::AllocInterPoint
+  if( Number <= 0 ) return;
+  if( Number >= interpointnumalloc ) {
+    FreeInterPoint();
+    nmemb = NUMDATA * Number;
+    if( (interpoint = new double[nmemb]) == NULL )
+      interpoint = 0;
+    else {
+      interpointnumalloc = Number;
+      memset( interpoint, 0x0, nmemb * sizeof(double) );
+    }
+  }
+  else
+    memset( interpoint, 0x0, interpointnumalloc * NUMDATA * sizeof(double) );
+} //Intersections::AllocInterPoint
 
-	if (Number >= interpointnumalloc)
-	{
-		FreeInterPoint();
-		nmemb = NUMDATA * Number;
-		if ((interpoint = new double[nmemb]) == NULL)//(double *) GlobalAlloc(GMEM_FIXED, nmemb*sizeof(double)))==NULL)
-			interpoint = 0;
-		else
-		{
-			interpointnumalloc = Number;
-//			ZeroMemory(interpoint, nmemb * sizeof(double));
-			memset(interpoint,0x0, nmemb * sizeof(double));
-		}
-	}
-	else
-//		ZeroMemory(interpoint, interpointnumalloc * NUMDATA * sizeof(double));
-		memset(interpoint,0x0, interpointnumalloc * NUMDATA * sizeof(double));
-	//{    for(i=0; i<interpointnumalloc; i++)
-	//     {  interpoint[i*NUMDATA]=0.0;
-	//  	  	interpoint[i*NUMDATA+1]=0.0;
-	//  		interpoint[i*NUMDATA+2]=0.0;
-	//  	   	interpoint[i*NUMDATA+3]=0.0;
-	//  	   	interpoint[i*NUMDATA+4]=0.0;
-	//     }
-	//}
-}
-
+//============================================================================
 void Intersections::FreeInterPoint()
-{
-	if (interpoint)
-		delete[] interpoint;//GlobalFree(interpoint);
-	interpoint = 0;
-	interpointnumalloc = 0;
-}
+{ //Intersections::FreeInterPoint
+  if( interpoint )
+    delete [] interpoint;
+  interpoint = 0;
+  interpointnumalloc = 0;
+} //Intersections::FreeInterPoint
 
 void Intersections::GetIntersection(long Number, long* XOrder, long* YOrder)
 {
@@ -620,9 +600,8 @@ void Intersections::GetInterPointCoord( long Number, double* x, double* y )
 //============================================================================
 void Intersections::GetInterPoint( long Number, Point *Pt )
 { //Intersections::GetInterPoint
-	Number *= NUMDATA;
-  Pt->x = interpoint[Number];
-  Pt->y = interpoint[++Number];
+  Number *= NUMDATA;
+  Pt->Set( interpoint[Number], interpoint[++Number] );
 } //Intersections::GetInterPoint
 
 void Intersections::GetInterPointFChx(long Number, double* Ros, double* Fli,
@@ -917,42 +896,6 @@ bool Intersections::SwapBarriersAndFires()
 	}
 
 	return true;
-
-	/*	long i, j, k;
-		 long NumBarrierPoints;
-		 double xpt, ypt, ros, fli;
-
-		 for(i=GetNumFires()-1; i>0; i--)
-		 {	if(GetInout(i)<3)
-		 	{	for(j=i-1; j>-1; j--)
-			  	{	if(GetInout(j)==3)
-				   	{	tranz(j, 0);	// move barrier to perimeter2
-							NumBarrierPoints=GetNumPoints(j);
-						FreePerimeter1(j);
-							 AllocPerimeter1(j, GetNumPoints(i)+1);
-							 for(k=0; k<=GetNumPoints(i); k++)
-							 {	xpt=GetPerimeter1Value(i, k, XCOORD);
-							ypt=GetPerimeter1Value(i, k, YCOORD);
-							ros=GetPerimeter1Value(i, k, ROSVAL);
-							fli=GetPerimeter1Value(i, k, FLIVAL);
-					   		 SetPerimeter1(j, k, xpt, ypt);
-		 				   	SetFireChx(j, k, ros, fli);
-							 }
-							 SetNumPoints(j, GetNumPoints(i));
-							 SetInout(j, GetInout(i));
-							 FreePerimeter1(i);
-							 AllocPerimeter1(i, NumBarrierPoints+1);
-							 SetNumPoints(i, NumBarrierPoints);
-							 SetInout(i, 3);
-							 tranz(i, NumBarrierPoints+1);
-							break;	// exit for loop
-						}
-				   }
-			  }
-		 }
-
-		 return true;
-	*/
 }
 
 /*============================================================================
@@ -1287,7 +1230,7 @@ bool Intersections::AllocCrossThreads()
   if( NumCrossThreads == GetMaxThreads() ) return true;
 
   CloseCrossThreads();
-  crossthread = new CrossThread[GetMaxThreads()];
+  crossthread = new CrossThread[ GetMaxThreads() ];
 
   if( ! crossthread ) {
     NumCrossThreads = 0;
@@ -1300,27 +1243,27 @@ bool Intersections::AllocCrossThreads()
   return true;
 } //Intersections::AllocCrossThreads
 
-
+//============================================================================
 void Intersections::CloseCrossThreads()
-{
+{ //Intersections::CloseCrossThreads
   FreeCrossThreads();
-}
+} //Intersections::CloseCrossThreads
 
+//============================================================================
 void Intersections::FreeCrossThreads()
-{
-	if (crossthread)
-		delete[] crossthread;
+{ //Intersections::FreeCrossThreads
+  if( crossthread )
+    delete[] crossthread;
 
-	crossthread = 0;
-	NumCrossThreads = 0;
-}
+  crossthread = 0;
+  NumCrossThreads = 0;
+} //Intersections::FreeCrossThreads
 
 //============================================================================
 bool Intersections::EliminateCrossPoints( long CurrentFire )
 { //Intersections::EliminateCrossPoints
   bool Modified = false;
   long i, j, BadPt;
-  double* perimeter1;
   double xpt, ypt, xptn, yptn;
   double xdiff, ydiff, dist, offset;
 
@@ -1345,11 +1288,11 @@ bool Intersections::EliminateCrossPoints( long CurrentFire )
 
       //Basically zero, so get rid of the point, this will avoid endless loop.
       if( dist < 1e-4 ) {
-        perimeter1 = GetPerimeter1Address( CurrentFire, 0 );
-        memcpy( &perimeter1[BadPt * NUMDATA],
-                &perimeter1[(BadPt + 1) * NUMDATA],
-                (NumPts - BadPt) * NUMDATA * sizeof(double) );
+        //20200410 JWB: Replaced use of GetPerimeter1Address(NumFire,0) &
+        //              memcpy() here with PerimeterPoint::DeletePoint().
+        DeletePoint( CurrentFire, BadPt );
         NumPts--;
+
         for( j = i + 1; j < numcross; j++ ) {
           if( labs(intersect[j * 2]) == BadPt ||
               labs(intersect[j * 2 + 1]) == BadPt ) {
@@ -1682,7 +1625,6 @@ bool Intersections::CrossCompare( long *CurrentFire, long NextFire )
       SetNumPoints( NextFire, 0 );    //and overly large number of crosses on
       SetInout( NextFire, 0 );        //spaghetti fronts
       IncSkipFires( 1 );
-      FreePerimeter1( NextFire );
       numcross = 0;
     }
     //Else if merging two fires then....
@@ -1770,10 +1712,16 @@ bool Intersections::CrossCompare( long *CurrentFire, long NextFire )
                   CallLevel, "" );
 
         if( GetInout(NextFire) == 3 ) {  // if merging fire with barrier
+          if( Verbose >= CallLevel )
+            printf( "%*sfsxwutil:Intersections::CrossCompare:4b6a\n",
+                    CallLevel, "" );
           OrganizeIntersections( *CurrentFire );
           MergeBarrier( CurrentFire, NextFire );
         }
         else {
+          if( Verbose >= CallLevel )
+            printf( "%*sfsxwutil:Intersections::CrossCompare:4b6b\n",
+                    CallLevel, "" );
           if( GetInout(*CurrentFire) == 2 ) {
             if( GetNumPoints(*CurrentFire) < GetNumPoints(NextFire) )
               writenum = 1;
@@ -1781,6 +1729,10 @@ bool Intersections::CrossCompare( long *CurrentFire, long NextFire )
           if( ! MergeFire(CurrentFire, NextFire) ) Result = false;
           Result = false;
         }
+
+        if( Verbose >= CallLevel )
+          printf( "%*sfsxwutil:Intersections::CrossCompare:4b7\n",
+                  CallLevel, "" );
       }
     }
 
@@ -1819,7 +1771,7 @@ bool Intersections::CrossCompare( long *CurrentFire, long NextFire )
   }
   else if( GetInout(NextFire) == 3 ) {
     if( Verbose >= CallLevel )
-      printf( "%*sfsxwutil:Intersections::CrossCompare:4g\n", CallLevel, "" );
+      printf( "%*sfsxwutil:Intersections::CrossCompare:4h\n", CallLevel, "" );
 
     if( GetInout(*CurrentFire) == 1 )
       CheckEnvelopedFires( *CurrentFire, NextFire );
@@ -1835,108 +1787,98 @@ bool Intersections::CrossCompare( long *CurrentFire, long NextFire )
   return Result;
 } // Intersections::CrossCompare
 
+//============================================================================
+void Intersections::CheckEnvelopedFires( long Fire1, long Fire2 )
+{ //Intersections::CheckEnvelopedFires
+  long i, j, k, m;
+  long NumPts1, NumPts2;
+  long NumSmall, FireSmall, FireBig;
+  long Inside1, Inside2;
+  double XLo1, XLo2, XHi1, XHi2;
+  double YLo1, YLo2, YHi1, YHi2;
+  double fli;
 
-void Intersections::CheckEnvelopedFires(long Fire1, long Fire2)
-{
-	long i, j, k, m;
-	long NumPts1, NumPts2;
-	long NumSmall, FireSmall, FireBig;
-	long Inside1, Inside2;
-	double XLo1, XLo2, XHi1, XHi2;
-	double YLo1, YLo2, YHi1, YHi2;
-	double fli;
+  NumPts1 = GetNumPoints(Fire1);
+  NumPts2 = GetNumPoints(Fire2);
+  XLo1 = GetPerimeter1Value(Fire1, NumPts1, XCOORD);
+  XHi1 = GetPerimeter1Value(Fire1, NumPts1, YCOORD);
+  YLo1 = GetPerimeter1Value(Fire1, NumPts1, XCOORD);
+  YHi1 = GetPerimeter1Value(Fire1, NumPts1, YCOORD);
+  XLo2 = GetPerimeter1Value(Fire2, NumPts2, XCOORD);
+  XHi2 = GetPerimeter1Value(Fire2, NumPts2, YCOORD);
+  YLo2 = GetPerimeter1Value(Fire2, NumPts2, XCOORD);
+  YHi2 = GetPerimeter1Value(Fire2, NumPts2, YCOORD);
+  Inside1 = 0;
+  Inside2 = 1;
 
-	NumPts1 = GetNumPoints(Fire1);
-	NumPts2 = GetNumPoints(Fire2);
-	XLo1 = GetPerimeter1Value(Fire1, NumPts1, XCOORD);
-	XHi1 = GetPerimeter1Value(Fire1, NumPts1, YCOORD);
-	YLo1 = GetPerimeter1Value(Fire1, NumPts1, XCOORD);
-	YHi1 = GetPerimeter1Value(Fire1, NumPts1, YCOORD);
-	XLo2 = GetPerimeter1Value(Fire2, NumPts2, XCOORD);
-	XHi2 = GetPerimeter1Value(Fire2, NumPts2, YCOORD);
-	YLo2 = GetPerimeter1Value(Fire2, NumPts2, XCOORD);
-	YHi2 = GetPerimeter1Value(Fire2, NumPts2, YCOORD);
-	Inside1 = 0;
-	Inside2 = 1;
+  // fires must overlap to get to this point, thus must find out which
+  // one is smaller and could fit inside larger one
+  if( (XHi1 - XLo1) * (YHi1 - YLo1) < (XHi2 - XLo2) * (YHi2 - YLo2) ) {
+    NumSmall = NumPts1;
+    FireSmall = Fire1;
+    FireBig = Fire2;
+  }
+  else {
+    NumSmall = NumPts2;
+    FireSmall = Fire2;
+    FireBig = Fire1;
+  }
 
-	// fires must overlap to get to this point, thus must find out which
-	// one is smaller and could fit inside larger one
-	if( (XHi1 - XLo1) * (YHi1 - YLo1) < (XHi2 - XLo2) * (YHi2 - YLo2) ) {
-		NumSmall = NumPts1;
-		FireSmall = Fire1;
-		FireBig = Fire2;
-	}
-	else {
-		NumSmall = NumPts2;
-		FireSmall = Fire2;
-		FireBig = Fire1;
-	}
+  for( i = 0; i < NumSmall; i++ ) {
+    startx = GetPerimeter1Value(FireSmall, i, XCOORD);
+    starty = GetPerimeter1Value(FireSmall, i, YCOORD);
+    fli = GetPerimeter1Value(FireSmall, i, FLIVAL);
+    if( fli >= 0.0 )    // don't test for extinguished points
+      Inside1 = Overlap(FireBig);
+    else
+      continue;
+    if( Inside1 ) {
+      Inside2 = 0;
+      for( j = 0; j < GetNewFires(); j++ ) {
+        if( GetInout(j) == 2 ) {
+          //NumPtsIn=GetNumPoints(j);
+          if( BoundCross(FireBig, j) ) {    // if(overlap of outer and inner)
+            Inside1 = 0;
+            for( m = 0; m < GetNumPoints(j); m++ ) {
+              startx = GetPerimeter1Value(j, m, XCOORD);
+              starty = GetPerimeter1Value(j, m, YCOORD);
+              Inside1 = Overlap(FireBig);
 
-	for( i = 0; i < NumSmall; i++ ) {
-		startx = GetPerimeter1Value(FireSmall, i, XCOORD);
-		starty = GetPerimeter1Value(FireSmall, i, YCOORD);
-		fli = GetPerimeter1Value(FireSmall, i, FLIVAL);
-		if (fli >= 0.0) 					  // don't test for extinguished points
-			Inside1 = Overlap(FireBig);
-		else
-			continue;
-		if (Inside1)
-		{
-			Inside2 = 0;
-			for (j = 0; j < GetNewFires(); j++)
-			{
-				if (GetInout(j) == 2)
-				{
-					//NumPtsIn=GetNumPoints(j);
-					if (BoundCross(FireBig, j)) 			// if(overlap of outer and inner)
-					{
-						Inside1 = 0;
-						for (m = 0; m < GetNumPoints(j); m++)
-						{
-							startx = GetPerimeter1Value(j, m, XCOORD);
-							starty = GetPerimeter1Value(j, m, YCOORD);
-							Inside1 = Overlap(FireBig);
-							if (Inside1)
-								break;
-						}
-						if (Inside1)//!MergeInAndOutOK(FireBig, j))   // if(Inward is inside big one)
-						{
-							for (k = 0; k < NumSmall; k++)
-							{
-								fli = GetPerimeter1Value(FireSmall, k, FLIVAL);
-								if (fli > 0.0)    // no points on barren ground
-								{
-									startx = GetPerimeter1Value(FireSmall, k,
-												XCOORD);
-									starty = GetPerimeter1Value(FireSmall, k,
-												YCOORD);
-									Inside2 = Overlap(j);
-									if (Inside2)
-										break;
-								}
-							}
-						}
-						else
-							continue;
-					}
-				}
-				if (Inside2)
-					break;
-			}
-			i = NumSmall;   	  // force exit from for loop
-		}
-	}
-	if (!Inside2)
-	{
-		SetInout(FireSmall, 0);
-		SetNumPoints(FireSmall, 0);
-		IncSkipFires(1);
-		FreePerimeter1(FireSmall);
-		if (CheckPostFrontal(GETVAL))
-			SetNewFireNumber(FireSmall, -1,
-				post.AccessReferenceRingNum(1, GETVAL));
-	}
-}
+              if( Inside1 ) break;
+            }
+
+            if( Inside1 ) {  //!MergeInAndOutOK(FireBig, j))   // if(Inward is inside big one)
+              for( k = 0; k < NumSmall; k++ ) {
+                fli = GetPerimeter1Value(FireSmall, k, FLIVAL);
+                if( fli > 0.0 ) {    // no points on barren ground
+                  startx = GetPerimeter1Value(FireSmall, k, XCOORD);
+                  starty = GetPerimeter1Value(FireSmall, k, YCOORD);
+                  Inside2 = Overlap(j);
+
+                  if( Inside2 ) break;
+                }
+              }
+            }
+            else continue;
+          }
+        }
+
+        if( Inside2 ) break;
+      }
+      i = NumSmall;    // force exit from for loop
+    }
+  }
+
+  if( ! Inside2 ) {
+    SetInout(FireSmall, 0);
+    SetNumPoints(FireSmall, 0);
+    IncSkipFires(1);
+    if( CheckPostFrontal(GETVAL) ) {
+      SetNewFireNumber( FireSmall, -1,
+                        post.AccessReferenceRingNum(1, GETVAL) );
+    }
+  }
+} //Intersections::CheckEnvelopedFires
 
 /*============================================================================
   StandardizePolygon::ReorderPerimeter
@@ -2178,85 +2120,12 @@ void Intersections::MergeBarrier(long* CurrentFire, long NextFire)
 	}
 	if (NumNewPoints > (NumPts + 1))
 	{
-		FreePerimeter1(*CurrentFire);
 		AllocPerimeter1(*CurrentFire, NumNewPoints);
 	}
 	tranz(*CurrentFire, NumNewPoints);
 	SetNumPoints(*CurrentFire, NumNewPoints - 1);
 }
 
-
-/*
-void Intersections::MergeBarrier(long *CurrentFire, long NextFire)
-{// neutralize points intersecting and falling inside barrier
-	 long i, j, Start, End, NumPts, NumNewPoints, inside;
-	 double xpt, ypt, ros, fli, rcx, dist;
-
-	 if(numcross<2)
-		  return;
-
-	 NumPts=GetNumPoints(*CurrentFire);
-	 AllocPerimeter2(NumPts+numcross+1);
-	 Start=NumNewPoints=0;
-	 for(i=0; i<=numcross; i++)
-	 {    if(i<numcross)
-		 	End=GetSpan(i, 0);
-	 	else
-		  	End=NumPts-1;
-		for(j=Start; j<=End; j++)
-		{	xpt=GetPerimeter1Value(*CurrentFire, j, XCOORD);
-			  ypt=GetPerimeter1Value(*CurrentFire, j, YCOORD);
-	 		 ros=GetPerimeter1Value(*CurrentFire, j, ROSVAL);
-		  	fli=GetPerimeter1Value(*CurrentFire, j, FLIVAL);
-			  rcx=GetPerimeter1Value(*CurrentFire, j, RCXVAL);
-	 			SetPerimeter2(NumNewPoints++, xpt, ypt, ros, fli, rcx);
-		  }
-		  Start=End+1;
-		  if(Start>NumPts-1)
-		  	Start=NumPts-1;
-		  if(i<numcross)
-		  {	GetInterPointCoord(i, &xpt, &ypt);
-			  dist=pow2(xpt-startx)+pow2(ypt-starty);
-	 		 if(dist>0.1)   	  // don't allow duplicate points
-		   	{    GetInterPointFChx(i, &ros, &fli, &rcx);
-					if(fli>0.0)
-						 fli*=-1.0;
-					else if(fli==0.0)
-						 fli=-1.0;
-		 			SetPerimeter2(NumNewPoints++, xpt, ypt, ros, fli, rcx);
-	 		}
-		}
-	 }
-	 j=NumPts;
-	xpt=GetPerimeter1Value(*CurrentFire, j, XCOORD);
-	ypt=GetPerimeter1Value(*CurrentFire, j, YCOORD);
-	 ros=GetPerimeter1Value(*CurrentFire, j, ROSVAL);
-	 fli=GetPerimeter1Value(*CurrentFire, j, FLIVAL);
-	 SetPerimeter2(NumNewPoints, xpt, ypt, ros, fli, 0.0);
-	 if(NumNewPoints>NumPts)
-	 {    FreePerimeter1(*CurrentFire);
-		  AllocPerimeter1(*CurrentFire, NumNewPoints+1);
-	 }
-	 tranz(*CurrentFire, NumNewPoints+1);
-	 SetNumPoints(*CurrentFire, NumNewPoints);
-	 NumPts=NumNewPoints;
-
-	for(i=0; i<NumPts; i++)
-	{	startx=GetPerimeter1Value(*CurrentFire, i, XCOORD);
-		 starty=GetPerimeter1Value(*CurrentFire, i, YCOORD);
-			inside=Overlap(NextFire);
-		  if(inside)
-		  {    ros=GetPerimeter1Value(*CurrentFire, i, ROSVAL);
-		  	fli=GetPerimeter1Value(*CurrentFire, i, FLIVAL);
-			  if(fli>0.0)
-		  		 fli*=-1.0;
-			   if(fli==0.0)
-				  	fli=-1.0;
-			   SetFireChx(*CurrentFire, i, ros, fli);
-		  }
-	 }
-}
-*/
 
 void Intersections::OrganizeIntersections(long CurrentFire)
 {
@@ -2465,7 +2334,6 @@ void Intersections::OrganizeCrosses( long CurrentFire )
               CallLevel, "", 0, GetNumPoints(0) );
 
     NumPointsWritten = NextPoint;
-    FreePerimeter1( CurrentFire );
 
     if( Verbose >= CallLevel )
       printf( "%*sfsxwutil:Intersections::OrganizeCrosses:2e "
@@ -2557,849 +2425,776 @@ void Intersections::OrganizeIntersections(long CurrentFire)
 */
 
 
-bool Intersections::MergeFire(long* CurrentFire, long NextFire)
-{
-	// clips loops and merges fires, finds and stores enclaves
-	long xsect1 = 0, xsect2 = 0, xsect3 = 0, xsect4 = 0, xsect5, xsect6,
-		xsect7, xsect8;
-	long inc = 0, outcross = 0, offcheck = 0;
-	long fxend = 0, bxend = 0, Firstin = 0, Secondin = 0;
-	long numchek = 0, chekct = 0, newnump = 0, crosstype = 0;
-	long freadstart = 0, freadend, breadstart = 0, breadend = 0;
-	long forewrite = 0, backwrite = 0, xwrite = 0;
-	long* PostFires;
-	double diff1, diff2; //, diffshort=0;
+bool Intersections::MergeFire( long* CurrentFire, long NextFire )
+{ //Intersections::MergeFire
+  // clips loops and merges fires, finds and stores enclaves
+  long xsect1 = 0, xsect2 = 0, xsect3 = 0, xsect4 = 0, xsect5, xsect6,
+       xsect7, xsect8;
+  long inc = 0, outcross = 0, offcheck = 0;
+  long fxend = 0, bxend = 0, Firstin = 0, Secondin = 0;
+  long numchek = 0, chekct = 0, newnump = 0, crosstype = 0;
+  long freadstart = 0, freadend, breadstart = 0, breadend = 0;
+  long forewrite = 0, backwrite = 0, xwrite = 0;
+  long* PostFires;
+  double diff1, diff2;
 
-	noffset1 = 0; noffset2 = 0;
-	if (*CurrentFire == NextFire)			// if merging loops on one fire
-	{
-		/*------------------------------------------------------------------//
-			// ##### Eliminated because based on point density 12/23/1994 #####
-			if(GetInout(*CurrentFire)==1)			// for outward fires only
-			{	diff2=GetNumPoints(*CurrentFire)/2;
-				for(numchek=0;numchek<numcross;numchek++)
-				{    GetIntersection(numchek, &xsect1, &xsect2);
-					diff1=xsect2-xsect1;
-					if(diff1>diff2)
-					{ 	if(numchek!=0)
-						{	GetIntersection(numchek-1, &xsect3, &xsect4);
-							diff1=xsect4-xsect3;
-							if(xsect1==xsect3)
-							{	if(diff1>0 && diff1<diff2)
-									noffset1=xsect4+1;
-								else
-									noffset1=xsect1+1;
-							}
-							else
-								noffset1=xsect1+1;
-						}
-						else
-							noffset1=xsect1+1;  // offsets for array addresses
-						noffset2=GetNumPoints(*CurrentFire);
-						noffset2=noffset2-noffset1;
-						GetIntersection(++numchek, &xsect3, &xsect4);
-						if(xsect3==xsect1)
-						{	while(xsect3==xsect1)
-							{ 	GetIntersection(++inc+numchek, &xsect3, &xsect6);
-							}
-						}
-						else
-						{	if(xsect4==xsect2)
-							{	while(xsect4==xsect2)
-								{//	xsect4=intersect[++inc+numchek][1];
-									GetIntersection(++inc+numchek, &xsect5, &xsect4);
-								}
-							}
-						}
-						outcross=inc+numchek; // offset for numchek
-						inc=0;
-						numchek--;
-					}
-				}
-			}
-			--------------------------------------------------------------------*/
-		long NumExistingFires = GetNewFires();
-		numchek = 0;
-		AllocSwap(GetNumPoints(*CurrentFire));
-		while (numchek < numcross)  	  	// for all line crosses
-		{
-			offcheck = (numchek + outcross);
-			GetOffcheck(&offcheck);
-			xsect1 = intercode(offcheck, 0);
-			xsect2 = intercode(offcheck, 1);  // =0 the first time through by default
-			fxend = offcheck;
-			offcheck = (++numchek + outcross);
-			GetOffcheck(&offcheck);
-			xsect3 = intercode(offcheck, 0);
-			xsect4 = intercode(offcheck, 1);
-			if (xsect3 != xsect2)   				  		// if two crosses in a row
-			{
-				xsect5 = xsect3;
-				xsect6 = xsect4;
-				if (xsect5 != xsect1 && xsect6 != xsect2)	// if only one cross on 1-2 span
-				{
-					xsect7 = xsect1;
-					xsect8 = xsect2;
-					while (xsect5 < xsect8)
-					{
-						offcheck = (++numchek + outcross);
-						GetOffcheck(&offcheck);
-						xsect5 = intercode(offcheck, 0);
-						xsect6 = intercode(offcheck, 1);
-						if (xsect8 <= xsect6)
-						{
-							xsect7 = xsect5;
-							xsect8 = xsect6;
-						}
-					}
-					while (xsect6 != xsect7)
-					{
-						offcheck = (++numchek + outcross);
-						GetOffcheck(&offcheck);
-						xsect6 = intercode(offcheck, 1);
-					}
-					if (xsect5 == xsect2 && xsect6 == xsect1)
-					{
-						offcheck = (numchek + outcross - 1);   // BACKS UP ONE IN INTERSECT[] TO ELIMINATE SINGLE CROSS-OVERS
-						GetOffcheck(&offcheck);
-						xsect7 = intercode(offcheck, 0);
-						xsect8 = intercode(offcheck, 1);
-						if (xsect7 > xsect4)
-							xsect4 = xsect7;		//  TEST 12/29/1994
-						if (xsect7 == xsect4 && xsect8 == xsect3)	// IF DOUBLE LOOP WITH INTERNAL FIRE
-						{
-							if (xsect4 - xsect3 > 2)	// if internal fire is > minimum point number 10
-							{
-								backwrite = 0;
-								breadstart = xsect3 + 1;
-								bxend = offcheck;
-								breadend = xsect4;
-								xwrite = backwrite;
-								readnum = *CurrentFire;
-								writenum = GetNewFires();
-								MergeWrite(bxend, breadstart, breadend,
-									&xwrite);
-								backwrite = xwrite;
-								AllocPerimeter1(GetNewFires(), xwrite + 1);
-								SetInout(GetNewFires(), 2);
-								SetNumPoints(GetNewFires(), xwrite);
-								SwapTranz(GetNewFires(), xwrite);
-								BoundaryBox(xwrite);
-								IncNewFires(1);
-							}
-						}
-						else
-						{
-							fxend = -1;
-						}
-					}
-					else
-					{
-						fxend = -1;
-					}
-					freadend = xsect1;
-					xwrite = forewrite;
-					readnum = *CurrentFire;
-					writenum = NextFire;
-					MergeWrite(fxend, freadstart, freadend, &xwrite);
-					forewrite = xwrite;
-					offcheck = (1 + numchek + outcross);
-					GetOffcheck(&offcheck);
-					xsect7 = intercode(offcheck, 0);
-					if (xsect7 != xsect5)
-						freadstart = xsect5 + 1;
-					else
-						freadstart = -1;
-				}
-				else			// more than one cross on 1-2 span
-				{
-					if (xsect5 == xsect1)  // if spike loop
-					{
-						while (xsect3 == xsect1)
-						{
-							offcheck = (++numchek + outcross);
-							GetOffcheck(&offcheck);
-							xsect3 = intercode(offcheck, 0);
-						}
-						offcheck = (--numchek + outcross);
-						GetOffcheck(&offcheck);
-						xsect3 = intercode(offcheck, 0);
-						xsect4 = intercode(offcheck, 1);
-						fxend = offcheck;
-						xsect5 = xsect3;
-						xsect7 = xsect3;
-						xsect6 = xsect4;
-						xsect8 = xsect4;
-						while (xsect5 < xsect8)	// traps reverse spike
-						{
-							offcheck = (++numchek + outcross);
-							GetOffcheck(&offcheck);
-							xsect5 = intercode(offcheck, 0);
-							xsect6 = intercode(offcheck, 1);
-							if (xsect8 <= xsect6)
-							{
-								xsect8 = xsect6;
-								xsect7 = xsect5;
-							}
-						}
-						while (xsect6 != xsect7)
-						{
-							offcheck = (++numchek + outcross);
-							GetOffcheck(&offcheck);
-							xsect6 = intercode(offcheck, 1);
-						}
-						/*if(xsect5>xsect4)
-														{	xsect4=xsect5;		// TEST 12/29/1994
-															inc=-1;
-														}*/
-						if (xsect5 == xsect4 && xsect6 == xsect3)
-						{
-							if (xsect4 - xsect3 > 2)	// if internal fire is > minimum point number 10
-							{
-								backwrite = 0;
-								breadstart = xsect3 + 1 + inc;  // +inc is TEST
-								bxend = offcheck;
-								breadend = xsect4;
-								xwrite = backwrite;
-								readnum = *CurrentFire;
-								writenum = GetNewFires();
-								MergeWrite(bxend, breadstart, breadend,
-									&xwrite);
-								backwrite = xwrite;
-								AllocPerimeter1(GetNewFires(), xwrite + 1);
-								SetInout(GetNewFires(), 2);
-								SetNumPoints(GetNewFires(), xwrite);
-								SwapTranz(GetNewFires(), xwrite);
-								BoundaryBox(xwrite);
-								IncNewFires(1);
-								inc = 0;				// inc is TEST
-							}
-						}
-						else
-							fxend = -1;
-						freadend = xsect1;
-						xwrite = forewrite;
-						readnum = *CurrentFire;
-						writenum = NextFire;
-						MergeWrite(fxend, freadstart, freadend, &xwrite);
-						forewrite = xwrite;
-						offcheck = (1 + numchek + outcross);
-						GetOffcheck(&offcheck);
-						xsect5 = intercode(offcheck, 0);
-						if (xsect5 != xsect8)
-							freadstart = xsect8 + 1;
-						else
-							freadstart = -1;
-					}
-					else   // spike starts on 1-2 span, "alternate spike loop"
-					{
-						while (xsect6 == xsect2)
-						{
-							offcheck = (++numchek + outcross);
-							GetOffcheck(&offcheck);
-							xsect6 = intercode(offcheck, 1);
-						}
-						offcheck = (--numchek + outcross);
-						GetOffcheck(&offcheck);
-						xsect5 = intercode(offcheck, 0);
-						xsect6 = intercode(offcheck, 1);
-						xsect7 = xsect5;
-						xsect8 = xsect6;
-						while (xsect5 < xsect8)
-						{
-							offcheck = (++numchek + outcross);
-							GetOffcheck(&offcheck);
-							xsect5 = intercode(offcheck, 0);
-							xsect6 = intercode(offcheck, 1);
-							if (xsect8 <= xsect6)
-							{
-								xsect8 = xsect6;
-								xsect7 = xsect5;
-							}
-						}
-						while (xsect6 != xsect7)
-						{
-							offcheck = (++numchek + outcross);
-							GetOffcheck(&offcheck);
-							xsect6 = intercode(offcheck, 1);
-						}
-						/*	if(xsect5>xsect4)
-													{	xsect4=xsect5;		// TEST 12/29/1994
-														inc=-1;
-													}*/
-						if (xsect5 == xsect4 && xsect6 == xsect3)
-						{
-							if (xsect4 - xsect3 > 2)	// if internal fire is > minimum point number 20
-							{
-								backwrite = 0;
-								breadstart = xsect3 + 1 + inc;	// +inc is TEST
-								bxend = offcheck;
-								breadend = xsect4;
-								xwrite = backwrite;
-								readnum = *CurrentFire;
-								writenum = GetNewFires();
-								MergeWrite(bxend, breadstart, breadend,
-									&xwrite);
-								backwrite = xwrite;
-								AllocPerimeter1(GetNewFires(), xwrite + 1);
-								SetInout(GetNewFires(), 2);
-								SetNumPoints(GetNewFires(), xwrite);
-								SwapTranz(GetNewFires(), xwrite);
-								BoundaryBox(xwrite);
-								IncNewFires(1);
-								inc = 0;				// inc is TEST
-							}
-						}
-						else
-							fxend = -1;
-						freadend = xsect1;
-						xwrite = forewrite;
-						readnum = *CurrentFire;
-						writenum = NextFire;
-						MergeWrite(fxend, freadstart, freadend, &xwrite);
-						forewrite = xwrite;
-						offcheck = (1 + numchek + outcross);
-						GetOffcheck(&offcheck);
-						xsect7 = intercode(offcheck, 0);
-						if (xsect7 != xsect5)
-							freadstart = xsect8 + 1;
-						else
-							freadstart = -1;
-					}
-				}
-				offcheck = (++numchek + outcross);
-				GetOffcheck(&offcheck);
-			}
-			else					// clip single loop
-			{
-				freadend = xsect1;   //freadstart=0 by default or other freadstart
-				xwrite = forewrite;
-				readnum = *CurrentFire;
-				writenum = NextFire;
-				MergeWrite(fxend, freadstart, freadend, &xwrite);
-				forewrite = xwrite;
-				offcheck = (++numchek + outcross);
-				GetOffcheck(&offcheck);
-				xsect5 = intercode(offcheck, 0);
-				if (offcheck != numcross && xsect5 != xsect3)    // no twin spike loop on xsect3 span
-					freadstart = xsect3 + 1;
-				else
-					freadstart = -1;
-			}
-		}
-		freadend = GetNumPoints(*CurrentFire) - 1;
-		fxend = -1;
-		xwrite = forewrite;
-		readnum = *CurrentFire;
-		writenum = NextFire;
-		MergeWrite(fxend, freadstart, freadend, &xwrite);
-		forewrite = xwrite;
-		offcheck = (++numchek + outcross);
-		GetOffcheck(&offcheck);
-		OldNumPoints = GetNumPoints(*CurrentFire);	// store old number of points for rediscretize
-		if (GetInout(*CurrentFire) == 2)
-		{
-			SetNumPoints(*CurrentFire, forewrite);
-			//FreeSwap();   				 		// must go before rediscretize which also uses swapperim
-			rediscretize(CurrentFire, true);
-		}
-		else
-		{
-			if (forewrite > 8 || forewrite > ((double) OldNumPoints) / 2.0) // normal exit from MergeFire
-			{
-				SetNumPoints(*CurrentFire, forewrite);
-				//FreeSwap();   				 		// must go before rediscretize which also uses swapperim
-				rediscretize(CurrentFire, true);
-			}
-			else	// reset new inward fires
-			{
-				for (numchek = NumExistingFires;
-					numchek < GetNewFires();
-					numchek++)
-				{
-					FreePerimeter1(numchek);
-					SetNumPoints(numchek, 0);
-					SetInout(numchek, 0);
-				}
-				//-----------------------------------------------------
-				//----- New Sequence Finds Only OuterPerim
-				FindOuterFirePerimeter(*CurrentFire);
-				//FreeSwap();   				 		// must go before rediscretize which also uses swapperim
-				rediscretize(CurrentFire, false);
-				//-----------------------------------------------------
+  noffset1 = 0; noffset2 = 0;
+  if( *CurrentFire == NextFire ) {   // if merging loops on one fire
+    /*------------------------------------------------------------------//
+    // ##### Eliminated because based on point density 12/23/1994 #####
+    if(GetInout(*CurrentFire)==1) { // for outward fires only
+      diff2=GetNumPoints(*CurrentFire)/2;
+      for(numchek=0;numchek<numcross;numchek++) {
+        GetIntersection(numchek, &xsect1, &xsect2);
+        diff1=xsect2-xsect1;
+        if(diff1>diff2) {
+          if(numchek!=0) {
+            GetIntersection(numchek-1, &xsect3, &xsect4);
+            diff1=xsect4-xsect3;
+            if(xsect1==xsect3) {
+              if(diff1>0 && diff1<diff2)
+                noffset1=xsect4+1;
+              else
+                noffset1=xsect1+1;
+            }
+            else
+              noffset1=xsect1+1;
+          }
+          else
+            noffset1=xsect1+1;  // offsets for array addresses
+            noffset2=GetNumPoints(*CurrentFire);
+            noffset2=noffset2-noffset1;
+            GetIntersection(++numchek, &xsect3, &xsect4);
+            if(xsect3==xsect1) {
+              while(xsect3==xsect1) {
+                GetIntersection(++inc+numchek, &xsect3, &xsect6);
+              }
+            }
+            else {
+              if(xsect4==xsect2) {
+                while(xsect4==xsect2) {
+                  //xsect4=intersect[++inc+numchek][1];
+                  GetIntersection(++inc+numchek, &xsect5, &xsect4);
+                }
+              }
+            }
+            outcross=inc+numchek; // offset for numchek
+            inc=0;
+            numchek--;
+          }
+        }
+      }
+    --------------------------------------------------------------------*/
+    long NumExistingFires = GetNewFires();
+    numchek = 0;
+    AllocSwap(GetNumPoints(*CurrentFire));
+    while (numchek < numcross) {    // for all line crosses
+      offcheck = (numchek + outcross);
+      GetOffcheck(&offcheck);
+      xsect1 = intercode(offcheck, 0);
+      xsect2 = intercode(offcheck, 1);  // =0 the first time through by default
+      fxend = offcheck;
+      offcheck = (++numchek + outcross);
+      GetOffcheck(&offcheck);
+      xsect3 = intercode(offcheck, 0);
+      xsect4 = intercode(offcheck, 1);
+      if( xsect3 != xsect2 ) {    // if two crosses in a row
+        xsect5 = xsect3;
+        xsect6 = xsect4;
+        if( xsect5 != xsect1 && xsect6 != xsect2 ) { // if only one cross on 1-2 span
+          xsect7 = xsect1;
+          xsect8 = xsect2;
+          while( xsect5 < xsect8 ) {
+            offcheck = (++numchek + outcross);
+            GetOffcheck(&offcheck);
+            xsect5 = intercode(offcheck, 0);
+            xsect6 = intercode(offcheck, 1);
+            if( xsect8 <= xsect6 ) {
+              xsect7 = xsect5;
+              xsect8 = xsect6;
+            }
+          }
 
-				//-----------------------------------------------------
-				//----- Old Sequence Leaves Fire In WITHOUT LOOP CLIPPING
-				//FreeSwap();
-				//SetNewFires(NumExistingFires);
-				//-----------------------------------------------------
+          while (xsect6 != xsect7) {
+            offcheck = (++numchek + outcross);
+            GetOffcheck(&offcheck);
+            xsect6 = intercode(offcheck, 1);
+          }
 
-				return false;
-			}
-		}
-	}   					 // if merging two different fires
-	else if (numcross == 2)	// only two intersections between fires, no internal fires
-	{
-		writenum = *CurrentFire;
-		//FreePerimeter2();
-		AllocPerimeter2(2 * GetNumPoints(*CurrentFire) +
-			2 * GetNumPoints(NextFire));// be safe and allocate enough for both arrays
-		GetIntersection(numchek, &xsect1, &xsect2);
-		GetIntersection(++numchek, &xsect3, &xsect4);
-		startx = GetPerimeter1Value(*CurrentFire, 0, XCOORD);
-		starty = GetPerimeter1Value(*CurrentFire, 0, YCOORD);
-		Firstin = Overlap(NextFire);
-		startx = GetPerimeter1Value(NextFire, 0, XCOORD);
-		starty = GetPerimeter1Value(NextFire, 0, YCOORD);
-		Secondin = Overlap(*CurrentFire);
-		if (GetInout(*CurrentFire) == 2)
-		{
-			if (Secondin)
-				Secondin = 0;
-			else
-				Secondin = 1;
-		}
-		else if (GetInout(NextFire) == 2)
-		{
-			if (Firstin)
-				Firstin = 0;
-			else
-				Firstin = 1;
-		}
-		if (!Firstin)   						 // origin of 1st fire is not inside
-		{
-			if (!Secondin)    				// origin of 2nd fire is not inside
-				crosstype = 1;
-			else
-				crosstype = 2;				// 2nd only
-		}
-		else
-		{
-			if (!Secondin)
-				crosstype = 3;  				// 1st only
-			else
-				crosstype = 4;				// both origins within overlap
-		}
-		switch (crosstype)
-		{
-		case 1:
-			xwrite = forewrite; 	   // if both origins NOT within overlap
-			freadstart = 0;
-			freadend = xsect1;
-			fxend = numchek - 1;
-			readnum = *CurrentFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = xsect2 + 1;
-			freadend = GetNumPoints(NextFire) - 1;
-			fxend = -1;
-			readnum = NextFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = 0;
-			freadend = xsect4;
-			fxend = numchek;
-			readnum = NextFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = xsect3 + 1;
-			freadend = GetNumPoints(*CurrentFire) - 1;
-			fxend = -1;
-			readnum = *CurrentFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			forewrite = xwrite;
-			break;
-		case 2:
-			xwrite = forewrite = 0;			// if only origin on fire2 is within overlap
-			freadstart = 0;
-			freadend = xsect1;
-			fxend = numchek - 1;
-			readnum = *CurrentFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = xsect2 + 1;
-			freadend = xsect4;
-			fxend = numchek;
-			readnum = NextFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = xsect3 + 1;
-			freadend = GetNumPoints(*CurrentFire) - 1;
-			fxend = -1;
-			readnum = *CurrentFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			forewrite = xwrite;
-			break;
-		case 3:
-			xwrite = forewrite;			// if only origin on fire1 is within overlap
-			freadstart = xsect1 + 1;
-			freadend = xsect3;
-			fxend = numchek;
-			readnum = *CurrentFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = xsect4 + 1;
-			freadend = GetNumPoints(NextFire) - 1;
-			fxend = -1;
-			readnum = NextFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = 0;
-			freadend = xsect2;
-			fxend = numchek - 1;
-			readnum = NextFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			forewrite = xwrite;
-			break;
-		case 4:
-			xwrite = forewrite; 			// if both fire origins within overlap
-			freadstart = xsect1 + 1;
-			freadend = xsect3;
-			fxend = numchek;
-			readnum = *CurrentFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			freadstart = xsect4 + 1;
-			freadend = xsect2;  				   
-			fxend = numchek - 1;
-			readnum = NextFire;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			forewrite = xwrite;
-			break;
-		}
-		if (CheckPostFrontal(GETVAL))   	// for
-		{
-			PostFires = new long[2];
-			PostFires[0] = *CurrentFire;
-			PostFires[1] = NextFire;
-			post.MergeFireRings(PostFires, 2, intersect, interpoint, numcross,
-					forewrite);
-			delete[] PostFires;
-		}
+          if( xsect5 == xsect2 && xsect6 == xsect1 ) {
+            offcheck = (numchek + outcross - 1);   // BACKS UP ONE IN INTERSECT[] TO ELIMINATE SINGLE CROSS-OVERS
+            GetOffcheck(&offcheck);
+            xsect7 = intercode(offcheck, 0);
+            xsect8 = intercode(offcheck, 1);
+            if( xsect7 > xsect4 )
+              xsect4 = xsect7;    //  TEST 12/29/1994
+            if( xsect7 == xsect4 && xsect8 == xsect3 ) {  // IF DOUBLE LOOP WITH INTERNAL FIRE
+              if( xsect4 - xsect3 > 2 ) {     // if internal fire is > minimum point number 10
+                backwrite = 0;
+                breadstart = xsect3 + 1;
+                bxend = offcheck;
+                breadend = xsect4;
+                xwrite = backwrite;
+                readnum = *CurrentFire;
+                writenum = GetNewFires();
+                MergeWrite(bxend, breadstart, breadend, &xwrite);
+                backwrite = xwrite;
+                AllocPerimeter1(GetNewFires(), xwrite + 1);
+                SetInout(GetNewFires(), 2);
+                SetNumPoints(GetNewFires(), xwrite);
+                SwapTranz(GetNewFires(), xwrite);
+                BoundaryBox(xwrite);
+                IncNewFires(1);
+              }
+            }
+            else {
+              fxend = -1;
+            }
+          }
+          else {
+            fxend = -1;
+          }
+          freadend = xsect1;
+          xwrite = forewrite;
+          readnum = *CurrentFire;
+          writenum = NextFire;
+          MergeWrite(fxend, freadstart, freadend, &xwrite);
+          forewrite = xwrite;
+          offcheck = (1 + numchek + outcross);
+          GetOffcheck(&offcheck);
+          xsect7 = intercode(offcheck, 0);
+          if( xsect7 != xsect5 )
+            freadstart = xsect5 + 1;
+          else
+            freadstart = -1;
+        }
+        else {   // more than one cross on 1-2 span
+          if( xsect5 == xsect1 ) {   // if spike loop
+            while( xsect3 == xsect1 ) {
+              offcheck = (++numchek + outcross);
+              GetOffcheck(&offcheck);
+              xsect3 = intercode(offcheck, 0);
+            }
+            offcheck = (--numchek + outcross);
+            GetOffcheck(&offcheck);
+            xsect3 = intercode(offcheck, 0);
+            xsect4 = intercode(offcheck, 1);
+            fxend = offcheck;
+            xsect5 = xsect3;
+            xsect7 = xsect3;
+            xsect6 = xsect4;
+            xsect8 = xsect4;
+            while( xsect5 < xsect8 ) {    // traps reverse spike
+              offcheck = (++numchek + outcross);
+              GetOffcheck(&offcheck);
+              xsect5 = intercode(offcheck, 0);
+              xsect6 = intercode(offcheck, 1);
+              if( xsect8 <= xsect6 ) {
+                xsect8 = xsect6;
+                xsect7 = xsect5;
+              }
+            }
+            while( xsect6 != xsect7 ) {
+              offcheck = (++numchek + outcross);
+              GetOffcheck(&offcheck);
+              xsect6 = intercode(offcheck, 1);
+            }
 
-		OldNumPoints = GetNumPoints(*CurrentFire);	// store old number of points for rediscretize
-		SetNumPoints(*CurrentFire, forewrite);
-		if (GetInout(*CurrentFire) == 1 && GetInout(NextFire) == 1)
-			SetInout(*CurrentFire, 1);
-		else
-			SetInout(*CurrentFire, 2);
-		SetInout(NextFire, 0);
-		FreePerimeter1(NextFire);
-		IncSkipFires(1);
-		SetNumPoints(NextFire, 0);
-		if (GetNumAttacks() > 0)
-			SetNewFireNumberForAttack(NextFire, *CurrentFire);
-		if (GetNumAirAttacks() > 0)
-			SetNewFireNumberForAirAttack(NextFire, *CurrentFire);
+            /*if(xsect5>xsect4)
+              { xsect4=xsect5;    // TEST 12/29/1994
+              inc=-1;
+              }*/
+            if( xsect5 == xsect4 && xsect6 == xsect3 ) {
+              if( xsect4 - xsect3 > 2 ) {       // if internal fire is > minimum point number 10
+                backwrite = 0;
+                breadstart = xsect3 + 1 + inc;  // +inc is TEST
+                bxend = offcheck;
+                breadend = xsect4;
+                xwrite = backwrite;
+                readnum = *CurrentFire;
+                writenum = GetNewFires();
+                MergeWrite(bxend, breadstart, breadend, &xwrite);
+                backwrite = xwrite;
+                AllocPerimeter1(GetNewFires(), xwrite + 1);
+                SetInout(GetNewFires(), 2);
+                SetNumPoints(GetNewFires(), xwrite);
+                SwapTranz(GetNewFires(), xwrite);
+                BoundaryBox(xwrite);
+                IncNewFires(1);
+                inc = 0;      // inc is TEST
+              }
+            }
+            else fxend = -1;
 
-		NextFire = *CurrentFire;
-		rediscretize(CurrentFire, true);
-		if (CheckPostFrontal(GETVAL) && NextFire != *CurrentFire)
-			SetNewFireNumber(NextFire, *CurrentFire,
-				post.AccessReferenceRingNum(1, GETVAL));
-	}
-	else   // merging 2 fires with internal loops formed
-	{
-		long SpanStart, SpanEnd, SpanNext, trychek, Target;
-		double XStart, YStart, XTest, YTest, XTarget, YTarget, NXTarget,
-			NYTarget;
-		double DistToNext = 0, DistToLast = 0, NDistToLast = 0, diff3 = 0,
-			diff4 = 0, area;
-		long readfire = 0, inside = 0, outward = 0, ctfire1 = 0, ctfire2 = 0;
-		long endloop = -1;
-		long P2NumAlloc = GetNumPoints(*CurrentFire) +
-			GetNumPoints(NextFire) +
-			numcross;
-		long SwapNumAlloc = GetNumPoints(*CurrentFire) +
-			GetNumPoints(NextFire);
-		long i, NewFires1, NewFires2;
+            freadend = xsect1;
+            xwrite = forewrite;
+            readnum = *CurrentFire;
+            writenum = NextFire;
+            MergeWrite(fxend, freadstart, freadend, &xwrite);
+            forewrite = xwrite;
+            offcheck = (1 + numchek + outcross);
+            GetOffcheck(&offcheck);
+            xsect5 = intercode(offcheck, 0);
+            if( xsect5 != xsect8 )
+              freadstart = xsect8 + 1;
+            else
+              freadstart = -1;
+          }
+          else {    // spike starts on 1-2 span, "alternate spike loop"
+            while( xsect6 == xsect2 ) {
+              offcheck = (++numchek + outcross);
+              GetOffcheck(&offcheck);
+              xsect6 = intercode(offcheck, 1);
+            }
+            offcheck = (--numchek + outcross);
+            GetOffcheck(&offcheck);
+            xsect5 = intercode(offcheck, 0);
+            xsect6 = intercode(offcheck, 1);
+            xsect7 = xsect5;
+            xsect8 = xsect6;
+            while( xsect5 < xsect8 ) {
+              offcheck = (++numchek + outcross);
+              GetOffcheck(&offcheck);
+              xsect5 = intercode(offcheck, 0);
+              xsect6 = intercode(offcheck, 1);
+              if( xsect8 <= xsect6 ) {
+                xsect8 = xsect6;
+                xsect7 = xsect5;
+              }
+            }
+            while( xsect6 != xsect7 ) {
+              offcheck = (++numchek + outcross);
+              GetOffcheck(&offcheck);
+              xsect6 = intercode(offcheck, 1);
+            }
+            /*  if(xsect5>xsect4)
+                {  xsect4=xsect5;    // TEST 12/29/1994
+                  inc=-1;
+              }*/
+            if( xsect5 == xsect4 && xsect6 == xsect3 ) {
+              if( xsect4 - xsect3 > 2 ) {    // if internal fire is > minimum point number 20
+                backwrite = 0;
+                breadstart = xsect3 + 1 + inc;  // +inc is TEST
+                bxend = offcheck;
+                breadend = xsect4;
+                xwrite = backwrite;
+                readnum = *CurrentFire;
+                writenum = GetNewFires();
+                MergeWrite( bxend, breadstart, breadend, &xwrite );
+                backwrite = xwrite;
+                AllocPerimeter1(GetNewFires(), xwrite + 1);
+                SetInout(GetNewFires(), 2);
+                SetNumPoints(GetNewFires(), xwrite);
+                SwapTranz(GetNewFires(), xwrite);
+                BoundaryBox(xwrite);
+                IncNewFires(1);
+                inc = 0;    // inc is TEST
+              }
+            }
+            else fxend = -1;
 
-		NewFires1 = GetNewFires();  	// bookkeeping for postfrontal stuff
-		AllocCrossout(numcross);		// array for holding status of crosspoints 1=used
-		//FreePerimeter2();			// must GlobalFree perim2 because tranz not called
-		AllocPerimeter2(P2NumAlloc);  // allocate enough memory for combined number of points
-		AllocSwap(SwapNumAlloc);		// allocate enough memory for combined number of points
-		startx = GetPerimeter1Value(*CurrentFire, 0, XCOORD);
-		starty = GetPerimeter1Value(*CurrentFire, 0, YCOORD);
-		inside = Overlap(NextFire);
-		ctfire2 = *CurrentFire;
-		if (GetInout(NextFire) == 2)
-		{
-			if (inside)
-				inside = 0;
-			else
-				inside = 1;
-		}
-		if (!inside)			  // if first point on fire1 is within 2nd fire
-		{
-			SpanEnd = GetSpan(numchek, 0);
-			freadstart = 0; freadend = SpanEnd; fxend = numchek; ctfire1 = *CurrentFire;			// fxend=numchek;
-			readnum = *CurrentFire; writenum = ctfire2;
-			MergeWrite(fxend, freadstart, freadend, &xwrite);
-			SetCrossout(numchek, 1);
-			chekct++;
-		}
-		else				  // first point not within 2nd fire
-		{
-			readfire = 1;
-			endloop = 0;
-		}
-		while (chekct < numcross)
-		{
-			do
-			{
-				readfire = abs(readfire - 1);
-				if (readfire)
-					ctfire1 = NextFire; 			   // SWITCH FIRE PERIMETER TO READ FROM
-				else
-					ctfire1 = *CurrentFire;
-				if (readfire && fxend == -1)		   // IF READING FIRE 2 FROM ORIGIN OF ARRAY
-					SpanStart = -1;
-				else
-				{
-					SpanStart = GetSpan(numchek, readfire);
-					GetInterPointCoord(numchek, &XStart, &YStart);
-					if (SpanStart < GetNumPoints(ctfire1) - 1)
-						Target = SpanStart + 1;							// Target is the next point on fire
-					else
-						Target = 0;
-					XTarget = GetPerimeter1Value(ctfire1, Target, XCOORD);
-					YTarget = GetPerimeter1Value(ctfire1, Target, YCOORD);
-					diff1 = pow2(XStart - XTarget);
-					diff2 = pow2(YStart - YTarget);
-					DistToNext = DistToLast = sqrt(diff1 + diff2);
-				}
-				SpanEnd = 2500000;
-				trychek = 0;
-				do
-				{
-					if (trychek != numchek)
-					{
-						if (GetCrossout(trychek) == 0)					// IF NEXT INTERSECT HASN'T ALREADY BEEN USED
-						{
-							SpanNext = GetSpan(trychek, readfire);
-							//if(Target==0 && SpanNext==0)			// IF READING FROM LAST POINT IN ARRAY AND CROSS IS AT ZERO
-							//	SpanStart=-1;
-							if (SpanNext >= SpanStart && SpanNext <= SpanEnd)
-							{
-								if (SpanNext == SpanStart)		// IF NEXT INTERSECT IS >= TO CURRENT INTERSECT
-								{
-									GetInterPointCoord(trychek, &XTest, &YTest);
-									diff1 = pow2(XTest - XTarget);
-									diff2 = pow2(YTest - YTarget);
-									diff1 = sqrt(diff1 + diff2);
-									diff3 = pow2(XTest - XStart);
-									diff4 = pow2(YTest - YStart);
-									diff2 = sqrt(diff3 + diff4);
-									if (diff1 <= DistToNext &&
-										diff2 <= DistToLast)
-									{
-										SpanEnd = SpanNext;
-										numchek = trychek;
-										DistToLast = diff2;
-									}
-								}
-								else if (SpanNext == SpanEnd)	// && NDistToLast!=-1
-								{
-									GetInterPointCoord(trychek, &XTest, &YTest);
-									NXTarget = GetPerimeter1Value(ctfire1,
-												SpanNext, XCOORD);
-									NYTarget = GetPerimeter1Value(ctfire1,
-												SpanNext, YCOORD);
-									diff1 = pow2(XTest - NXTarget);
-									diff2 = pow2(YTest - NYTarget);
-									diff1 = sqrt(diff1 + diff2);
-									if (diff1 <= NDistToLast)
-									{
-										SpanEnd = SpanNext;
-										numchek = trychek;
-										NDistToLast = diff1;
-									}
-								}
-								else
-								{
-									SpanEnd = SpanNext;
-									numchek = trychek;
-									GetInterPointCoord(trychek, &XTest, &YTest);
-									NXTarget = GetPerimeter1Value(ctfire1,
-												SpanNext, XCOORD);
-									NYTarget = GetPerimeter1Value(ctfire1,
-												SpanNext, YCOORD);
-									diff1 = pow2(XTest - NXTarget);
-									diff2 = pow2(YTest - NYTarget);
-									NDistToLast = sqrt(diff1 + diff2);
-								}
-							}
-						}
-					}
-					trychek++;
-				}
-				while (trychek < numcross);
-				if (SpanEnd == 2500000)  			// if no match for above spanend
-				{
-					SpanEnd = GetNumPoints(ctfire1) - 1;
-					fxend = -1;
-					readfire = abs(readfire - 1);				// DON'T SWITCH FIRES YET
-				}
-				else
-					fxend = numchek;
-				freadstart = SpanStart + 1;
-				freadend = SpanEnd;
-				readnum = ctfire1;
-				writenum = ctfire2;
-				if (writenum == *CurrentFire)
-				{
-					if (xwrite + freadend - freadstart < P2NumAlloc)
-						MergeWrite(fxend, freadstart, freadend, &xwrite);
-					else
-					{
-						/*FindOuterFirePerimeter(*CurrentFire);
-													NumPts=GetNumPoints(*CurrentFire);
-													Xlo=GetPerimeter1Value(*CurrentFire, NumPts, 0);	// use OldNumPoints from perim1[count]
-													Xhi=GetPerimeter1Value(*CurrentFire, NumPts, 1);
-													Ylo=GetPerimeter1Value(*CurrentFire, NumPts, 2);
-													Yhi=GetPerimeter1Value(*CurrentFire, NumPts, 3);
-													SetPerimeter2(NumPts, Xlo, Xhi, Ylo, Yhi);
-													tranz(*CurrentFire, NumPts+1);
-													SetNumPoints(*CurrentFire, NumPts);
-													FindOuterFirePerimeter(NextFire);
-													NumPts=GetNumPoints(NextFire);
-													Xlo=GetPerimeter1Value(NextFire, NumPts, 0);	// use OldNumPoints from perim1[count]
-													Xhi=GetPerimeter1Value(NextFire, NumPts, 1);
-													Ylo=GetPerimeter1Value(NextFire, NumPts, 2);
-													Yhi=GetPerimeter1Value(NextFire, NumPts, 3);
-													SetPerimeter2(NumPts, Xlo, Xhi, Ylo, Yhi);
-													tranz(*CurrentFire, NumPts+1);
-													SetNumPoints(*CurrentFire, NumPts);
-													*/
-						numchek = endloop;
-						chekct = numcross;
-						outward = 1;
-						xwrite = 0;
-						fxend = -1;
-						newnump = 0;
-						//tranz(*CurrentFire, 0);   // must transfer to perim2 for rediscretize
-					}     // won't rediscretize if newnump==0
-				}
-				else
-				{
-					if (xwrite + freadend - freadstart < SwapNumAlloc)
-						MergeWrite(fxend, freadstart, freadend, &xwrite);
-					else
-					{
-						numchek = endloop;
-						if (!outward)
-							newnump = 0;
-						outward = 1;
-						chekct = numcross;
-						xwrite = 0;
-						fxend = -1;
-					}
-				}
-				if (GetCrossout(numchek) == 0)
-				{
-					SetCrossout(numchek, 1);
-					chekct++;   							   // INCREMENT CHEKCT
-				}
-				if (fxend == -1 && readfire)	   // different breakout criteria for outside first fire
-					break;
-			}
-			while (numchek != endloop);
+            freadend = xsect1;
+            xwrite = forewrite;
+            readnum = *CurrentFire;
+            writenum = NextFire;
+            MergeWrite(fxend, freadstart, freadend, &xwrite);
+            forewrite = xwrite;
+            offcheck = (1 + numchek + outcross);
+            GetOffcheck(&offcheck);
+            xsect7 = intercode(offcheck, 0);
+            if( xsect7 != xsect5 )
+              freadstart = xsect8 + 1;
+            else
+              freadstart = -1;
+          }
+        }
+        offcheck = (++numchek + outcross);
+        GetOffcheck(&offcheck);
+      }
+      else {     // clip single loop
+        freadend = xsect1;   //freadstart=0 by default or other freadstart
+        xwrite = forewrite;
+        readnum = *CurrentFire;
+        writenum = NextFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        forewrite = xwrite;
+        offcheck = (++numchek + outcross);
+        GetOffcheck(&offcheck);
+        xsect5 = intercode(offcheck, 0);
+        if( offcheck != numcross && xsect5 != xsect3 )    // no twin spike loop on xsect3 span
+          freadstart = xsect3 + 1;
+        else
+          freadstart = -1;
+      }
+    }
+    freadend = GetNumPoints(*CurrentFire) - 1;
+    fxend = -1;
+    xwrite = forewrite;
+    readnum = *CurrentFire;
+    writenum = NextFire;
+    MergeWrite(fxend, freadstart, freadend, &xwrite);
+    forewrite = xwrite;
+    offcheck = (++numchek + outcross);
+    GetOffcheck(&offcheck);
+    OldNumPoints = GetNumPoints(*CurrentFire);    // store old number of points for rediscretize
+    if( GetInout(*CurrentFire) == 2 ) {
+      SetNumPoints(*CurrentFire, forewrite);
+      //FreeSwap();    // must go before rediscretize which also uses swapperim
+      rediscretize(CurrentFire, true);
+    }
+    else {
+      if( forewrite > 8 || forewrite > ((double) OldNumPoints) / 2.0 ) {   // normal exit from MergeFire
+        SetNumPoints(*CurrentFire, forewrite);
+        //FreeSwap();      // must go before rediscretize which also uses swapperim
+        rediscretize(CurrentFire, true);
+      }
+      else {    // reset new inward fires
+        for( numchek = NumExistingFires; numchek < GetNewFires(); numchek++ ) {
+          SetNumPoints(numchek, 0);
+          SetInout(numchek, 0);
+        }
+        //-----------------------------------------------------
+        //----- New Sequence Finds Only OuterPerim
+        FindOuterFirePerimeter(*CurrentFire);
+        //FreeSwap(); 	  // must go before rediscretize which also uses swapperim
+        rediscretize(CurrentFire, false);
+        //-----------------------------------------------------
 
-			if (outward == 0)   					 // if outward fire has not been found
-			{
-				if (xwrite > 0)
-					area = arp(2, xwrite);
-				else
-					area = 0;
-				if (area > 0.0)
-				{
-					outward = 1;		// outside fire has been identified, there can be only 1 outward fire
-					newnump = xwrite;	// after merger
-					ctfire2 = GetNewFires();
-				}
-				else if (area < 0.0)		  	   // this was an inward fire, but
-				{
-					if (xwrite > 2)  			   // don't write very small "irrelevant" enclaves
-					{
-						if (GetInout(*CurrentFire) == 2 ||
-							GetInout(NextFire) == 2)
-						{
-							outward = 1;		// outside fire has been identified, there can be only 1 outward fire
-							newnump = xwrite;	// after merger
-							ctfire2 = GetNewFires();
-							SetInout(*CurrentFire, 2);
-						}
-						else
-						{
-							AllocPerimeter1(GetNewFires(), xwrite + 1);
-							tranz(GetNewFires(), xwrite);			// transfer points from perim2 to newfire array
-							BoundaryBox(xwrite);
-							SetNumPoints(GetNewFires(), xwrite);	// because this is an inward burning fire
-							SetInout(GetNewFires(), 2);
-							IncNewFires(1);
-						}
-					}
-				}
-			}
-			else if (xwrite > 2) 							// don't write very small "irrelevant" enclaves
-			{
-				AllocPerimeter1(GetNewFires(), xwrite + 1);
-				SwapTranz(GetNewFires(), xwrite);
-				BoundaryBox(xwrite);
-				SetNumPoints(GetNewFires(), xwrite);
-				SetInout(GetNewFires(), 2);
-				IncNewFires(1);
-				ctfire2 = GetNewFires();
-			}
-			if (chekct < numcross)
-			{
-				numchek = -1;
-				xwrite = 0;
-				do
-				{
-					inside = GetCrossout(++numchek);	 // find next loop, inward or outward
-				}
-				while (inside);
-				endloop = numchek;
-				inside = 1;			// reset inside for all but possibly first fire
-				readfire = 1;
-			}
-		}
+        //-----------------------------------------------------
+        //----- Old Sequence Leaves Fire In WITHOUT LOOP CLIPPING
+        //FreeSwap();
+        //SetNewFires(NumExistingFires);
+        //-----------------------------------------------------
 
-		i = 0;
-		if (CheckPostFrontal(GETVAL))   	// for
-		{
-			NewFires2 = GetNewFires();
-			if ((PostFires = new long[(NewFires2 - NewFires1 + 2)]) != NULL)
-			{
-				PostFires[0] = *CurrentFire;
-				PostFires[1] = NextFire;
-				for (i = 2; i < (NewFires2 - NewFires1 + 2); i++)
-					PostFires[i] = NewFires1 + i - 2;
-				post.MergeFireRings(PostFires, NewFires2 - NewFires1 + 2,
-						intersect, interpoint, numcross, newnump);
-				delete[] PostFires;//GlobalFree(PostFires);
-			}
-		}
+        return false;
+      }
+    }
+  }      // if merging two different fires
+  else if( numcross == 2 ) {    // only two intersections between fires, no internal fires
+    writenum = *CurrentFire;
+    //FreePerimeter2();
+    AllocPerimeter2( 2 * GetNumPoints(*CurrentFire) +
+                     2 * GetNumPoints(NextFire));// be safe and allocate enough for both arrays
+    GetIntersection(numchek, &xsect1, &xsect2);
+    GetIntersection(++numchek, &xsect3, &xsect4);
+    startx = GetPerimeter1Value(*CurrentFire, 0, XCOORD);
+    starty = GetPerimeter1Value(*CurrentFire, 0, YCOORD);
+    Firstin = Overlap(NextFire);
+    startx = GetPerimeter1Value(NextFire, 0, XCOORD);
+    starty = GetPerimeter1Value(NextFire, 0, YCOORD);
+    Secondin = Overlap(*CurrentFire);
+    if( GetInout(*CurrentFire) == 2 ) {
+      if( Secondin ) Secondin = 0;
+      else Secondin = 1;
+    }
+    else if( GetInout(NextFire) == 2 ) {
+      if( Firstin ) Firstin = 0;
+      else Firstin = 1;
+    }
+    if( ! Firstin ) {    // origin of 1st fire is not inside
+      if( ! Secondin ) crosstype = 1;    // origin of 2nd fire is not inside
+      else crosstype = 2;                // 2nd only
+    }
+    else {
+      if( ! Secondin ) crosstype = 3;    // 1st only
+      else crosstype = 4;                // both origins within overlap
+    }
 
-		OldNumPoints = GetNumPoints(*CurrentFire);	// store old number of points for rediscretize
-		if (newnump > P2NumAlloc)
-			newnump = 0;
-		else if (newnump > 0)
-			SetNumPoints(*CurrentFire, newnump);
-		SetNumPoints(NextFire, 0);
-		SetInout(NextFire, 0);
-		FreePerimeter1(NextFire);
-		IncSkipFires(1);
+    switch( crosstype ) {
+      case 1:
+        xwrite = forewrite;    // if both origins NOT within overlap
+        freadstart = 0;
+        freadend = xsect1;
+        fxend = numchek - 1;
+        readnum = *CurrentFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = xsect2 + 1;
+        freadend = GetNumPoints(NextFire) - 1;
+        fxend = -1;
+        readnum = NextFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = 0;
+        freadend = xsect4;
+        fxend = numchek;
+        readnum = NextFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = xsect3 + 1;
+        freadend = GetNumPoints(*CurrentFire) - 1;
+        fxend = -1;
+        readnum = *CurrentFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        forewrite = xwrite;
+        break;
 
-		if (GetNumAttacks() > 0)
-			SetNewFireNumberForAttack(NextFire, *CurrentFire);
-		if (GetNumAirAttacks() > 0)
-			SetNewFireNumberForAirAttack(NextFire, *CurrentFire);
+      case 2:
+        xwrite = forewrite = 0;    // if only origin on fire2 is within overlap
+        freadstart = 0;
+        freadend = xsect1;
+        fxend = numchek - 1;
+        readnum = *CurrentFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = xsect2 + 1;
+        freadend = xsect4;
+        fxend = numchek;
+        readnum = NextFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = xsect3 + 1;
+        freadend = GetNumPoints(*CurrentFire) - 1;
+        fxend = -1;
+        readnum = *CurrentFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        forewrite = xwrite;
+        break;
 
-		NextFire = *CurrentFire;
-		if (newnump > 0)
-			rediscretize(CurrentFire, true);	 // only rediscretize outer fire
-		if (CheckPostFrontal(GETVAL) && NextFire != *CurrentFire)
-			SetNewFireNumber(NextFire, *CurrentFire,
-				post.AccessReferenceRingNum(1, GETVAL));
-	}
+      case 3:
+        xwrite = forewrite;    // if only origin on fire1 is within overlap
+        freadstart = xsect1 + 1;
+        freadend = xsect3;
+        fxend = numchek;
+        readnum = *CurrentFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = xsect4 + 1;
+        freadend = GetNumPoints(NextFire) - 1;
+        fxend = -1;
+        readnum = NextFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = 0;
+        freadend = xsect2;
+        fxend = numchek - 1;
+        readnum = NextFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        forewrite = xwrite;
+        break;
 
-	return true;
-}
+      case 4:
+        xwrite = forewrite;    // if both fire origins within overlap
+        freadstart = xsect1 + 1;
+        freadend = xsect3;
+        fxend = numchek;
+        readnum = *CurrentFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        freadstart = xsect4 + 1;
+        freadend = xsect2;  				   
+        fxend = numchek - 1;
+        readnum = NextFire;
+        MergeWrite(fxend, freadstart, freadend, &xwrite);
+        forewrite = xwrite;
+        break;
+    }
+
+    /*20200402 JWB:
+      Added this check for if there are fire rings.
+      Not sure if this is correct, but the code will seg-fault
+      if MergeFireRings() is called when there are no fire rings.
+    */
+    if( GetNumRings() ) { //20200402 Check added
+      if( CheckPostFrontal(GETVAL) ) {
+        PostFires = new long[2];
+        PostFires[0] = *CurrentFire;
+        PostFires[1] = NextFire;
+        post.MergeFireRings( PostFires, 2, intersect, interpoint, numcross,
+                             forewrite );
+        delete[] PostFires;
+      }
+    }                     //20200402 Check added
+
+    OldNumPoints = GetNumPoints(*CurrentFire);	// store old number of points for rediscretize
+    SetNumPoints(*CurrentFire, forewrite);
+    if( GetInout(*CurrentFire) == 1 && GetInout(NextFire) == 1 )
+      SetInout(*CurrentFire, 1);
+    else
+      SetInout(*CurrentFire, 2);
+    SetInout(NextFire, 0);
+    IncSkipFires(1);
+    SetNumPoints(NextFire, 0);
+    if( GetNumAttacks() > 0 )
+      SetNewFireNumberForAttack(NextFire, *CurrentFire);
+    if( GetNumAirAttacks() > 0 )
+      SetNewFireNumberForAirAttack(NextFire, *CurrentFire);
+
+    NextFire = *CurrentFire;
+    rediscretize(CurrentFire, true);
+    if( CheckPostFrontal(GETVAL) && NextFire != *CurrentFire )
+      SetNewFireNumber( NextFire, *CurrentFire,
+                        post.AccessReferenceRingNum(1, GETVAL) );
+  }
+  else {   // merging 2 fires with internal loops formed
+    long SpanStart, SpanEnd, SpanNext, trychek, Target;
+    double XStart, YStart, XTest, YTest, XTarget, YTarget, NXTarget,
+           NYTarget;
+    double DistToNext = 0, DistToLast = 0, NDistToLast = 0, diff3 = 0,
+           diff4 = 0, area;
+    long readfire = 0, inside = 0, outward = 0, ctfire1 = 0, ctfire2 = 0;
+    long endloop = -1;
+    long P2NumAlloc = GetNumPoints(*CurrentFire) + GetNumPoints(NextFire) +
+                      numcross;
+    long SwapNumAlloc = GetNumPoints(*CurrentFire) + GetNumPoints(NextFire);
+    long i, NewFires1, NewFires2;
+
+    NewFires1 = GetNewFires();    // bookkeeping for postfrontal stuff
+    AllocCrossout(numcross);      // array for holding status of crosspoints 1=used
+    //FreePerimeter2();           // must GlobalFree perim2 because tranz not called
+    AllocPerimeter2(P2NumAlloc);  // allocate enough memory for combined number of points
+    AllocSwap(SwapNumAlloc);      // allocate enough memory for combined number of points
+    startx = GetPerimeter1Value(*CurrentFire, 0, XCOORD);
+    starty = GetPerimeter1Value(*CurrentFire, 0, YCOORD);
+    inside = Overlap(NextFire);
+    ctfire2 = *CurrentFire;
+
+    if( GetInout(NextFire) == 2 ) {
+      if( inside ) inside = 0;
+      else inside = 1;
+    }
+    if( ! inside ) {    // if first point on fire1 is within 2nd fire
+      SpanEnd = GetSpan(numchek, 0);
+      freadstart = 0; freadend = SpanEnd; fxend = numchek; ctfire1 = *CurrentFire;  // fxend=numchek;
+      readnum = *CurrentFire; writenum = ctfire2;
+      MergeWrite(fxend, freadstart, freadend, &xwrite);
+      SetCrossout(numchek, 1);
+      chekct++;
+    }
+    else {              // first point not within 2nd fire
+      readfire = 1;
+      endloop = 0;
+    }
+
+    while( chekct < numcross ) {
+      do {
+        readfire = abs(readfire - 1);
+        if( readfire )
+          ctfire1 = NextFire;    // SWITCH FIRE PERIMETER TO READ FROM
+        else
+          ctfire1 = *CurrentFire;
+        if( readfire && fxend == -1 )    // IF READING FIRE 2 FROM ORIGIN OF ARRAY
+          SpanStart = -1;
+        else {
+          SpanStart = GetSpan(numchek, readfire);
+          GetInterPointCoord(numchek, &XStart, &YStart);
+          if( SpanStart < GetNumPoints(ctfire1) - 1 )
+            Target = SpanStart + 1;    // Target is the next point on fire
+          else
+            Target = 0;
+          XTarget = GetPerimeter1Value(ctfire1, Target, XCOORD);
+          YTarget = GetPerimeter1Value(ctfire1, Target, YCOORD);
+          diff1 = pow2(XStart - XTarget);
+          diff2 = pow2(YStart - YTarget);
+          DistToNext = DistToLast = sqrt(diff1 + diff2);
+        }
+
+        SpanEnd = 2500000;
+        trychek = 0;
+        do {
+          if( trychek != numchek ) {
+            if( GetCrossout(trychek) == 0 ) {    // IF NEXT INTERSECT HASN'T ALREADY BEEN USED
+              SpanNext = GetSpan(trychek, readfire);
+              //if(Target==0 && SpanNext==0)  // IF READING FROM LAST POINT IN ARRAY AND CROSS IS AT ZERO
+              //  SpanStart=-1;
+              if( SpanNext >= SpanStart && SpanNext <= SpanEnd ) {
+                if( SpanNext == SpanStart ) {    // IF NEXT INTERSECT IS >= TO CURRENT INTERSECT
+                  GetInterPointCoord(trychek, &XTest, &YTest);
+                  diff1 = pow2(XTest - XTarget);
+                  diff2 = pow2(YTest - YTarget);
+                  diff1 = sqrt(diff1 + diff2);
+                  diff3 = pow2(XTest - XStart);
+                  diff4 = pow2(YTest - YStart);
+                  diff2 = sqrt(diff3 + diff4);
+                  if( diff1 <= DistToNext && diff2 <= DistToLast ) {
+                    SpanEnd = SpanNext;
+                    numchek = trychek;
+                    DistToLast = diff2;
+                  }
+                }
+                else if( SpanNext == SpanEnd ) {    // && NDistToLast!=-1
+                  GetInterPointCoord( trychek, &XTest, &YTest );
+                  NXTarget = GetPerimeter1Value( ctfire1, SpanNext, XCOORD );
+                  NYTarget = GetPerimeter1Value( ctfire1, SpanNext, YCOORD );
+                  diff1 = pow2( XTest - NXTarget );
+                  diff2 = pow2( YTest - NYTarget );
+                  diff1 = sqrt( diff1 + diff2 );
+                  if( diff1 <= NDistToLast ) {
+                    SpanEnd = SpanNext;
+                    numchek = trychek;
+                    NDistToLast = diff1;
+                  }
+                }
+                else {
+                  SpanEnd = SpanNext;
+                  numchek = trychek;
+                  GetInterPointCoord( trychek, &XTest, &YTest );
+                  NXTarget = GetPerimeter1Value( ctfire1, SpanNext, XCOORD );
+                  NYTarget = GetPerimeter1Value( ctfire1, SpanNext, YCOORD );
+                  diff1 = pow2( XTest - NXTarget );
+                  diff2 = pow2( YTest - NYTarget );
+                  NDistToLast = sqrt( diff1 + diff2 );
+                }
+              }
+            }
+          }
+          trychek++;
+        } while( trychek < numcross );
+
+        if( SpanEnd == 2500000 ) {    // if no match for above spanend
+          SpanEnd = GetNumPoints(ctfire1) - 1;
+          fxend = -1;
+          readfire = abs(readfire - 1);    // DON'T SWITCH FIRES YET
+        }
+        else
+          fxend = numchek;
+
+        freadstart = SpanStart + 1;
+        freadend = SpanEnd;
+        readnum = ctfire1;
+        writenum = ctfire2;
+
+        if( writenum == *CurrentFire ) {
+          if( xwrite + freadend - freadstart < P2NumAlloc )
+            MergeWrite(fxend, freadstart, freadend, &xwrite);
+          else {
+            /*FindOuterFirePerimeter(*CurrentFire);
+              NumPts=GetNumPoints(*CurrentFire);
+              Xlo=GetPerimeter1Value(*CurrentFire, NumPts, 0);    // use OldNumPoints from perim1[count]
+              Xhi=GetPerimeter1Value(*CurrentFire, NumPts, 1);
+              Ylo=GetPerimeter1Value(*CurrentFire, NumPts, 2);
+              Yhi=GetPerimeter1Value(*CurrentFire, NumPts, 3);
+              SetPerimeter2(NumPts, Xlo, Xhi, Ylo, Yhi);
+              tranz(*CurrentFire, NumPts+1);
+              SetNumPoints(*CurrentFire, NumPts);
+              FindOuterFirePerimeter(NextFire);
+              NumPts=GetNumPoints(NextFire);
+              Xlo=GetPerimeter1Value(NextFire, NumPts, 0);      // use OldNumPoints from perim1[count]
+              Xhi=GetPerimeter1Value(NextFire, NumPts, 1);
+              Ylo=GetPerimeter1Value(NextFire, NumPts, 2);
+              Yhi=GetPerimeter1Value(NextFire, NumPts, 3);
+              SetPerimeter2(NumPts, Xlo, Xhi, Ylo, Yhi);
+              tranz(*CurrentFire, NumPts+1);
+              SetNumPoints(*CurrentFire, NumPts);
+            */
+            numchek = endloop;
+            chekct = numcross;
+            outward = 1;
+            xwrite = 0;
+            fxend = -1;
+            newnump = 0;
+            //tranz(*CurrentFire, 0);   // must transfer to perim2 for rediscretize
+          }     // won't rediscretize if newnump==0
+        }
+        else {
+          if( xwrite + freadend - freadstart < SwapNumAlloc )
+            MergeWrite(fxend, freadstart, freadend, &xwrite);
+          else {
+            numchek = endloop;
+            if( ! outward ) newnump = 0;
+            outward = 1;
+            chekct = numcross;
+            xwrite = 0;
+            fxend = -1;
+          }
+        }
+
+        if( GetCrossout(numchek) == 0 ) {
+          SetCrossout(numchek, 1);
+          chekct++;
+        }
+        if( fxend == -1 && readfire )    // different breakout criteria for outside first fire
+          break;
+      } while( numchek != endloop );
+
+      if( outward == 0 ) {    // if outward fire has not been found
+        if( xwrite > 0 )
+          area = arp(2, xwrite);
+        else area = 0;
+
+        if( area > 0.0 ) {
+          outward = 1;       // outside fire has been identified, there can be only 1 outward fire
+          newnump = xwrite;  // after merger
+          ctfire2 = GetNewFires();
+        }
+        else if( area < 0.0 ) {     // this was an inward fire, but
+          if( xwrite > 2 ) {        // don't write very small "irrelevant" enclaves
+            if( GetInout(*CurrentFire) == 2 || GetInout(NextFire) == 2 ) {
+              outward = 1;         // outside fire has been identified, there can be only 1 outward fire
+              newnump = xwrite;    // after merger
+              ctfire2 = GetNewFires();
+              SetInout(*CurrentFire, 2);
+            }
+            else {
+              AllocPerimeter1(GetNewFires(), xwrite + 1);
+              tranz(GetNewFires(), xwrite);    // transfer points from perim2 to newfire array
+              BoundaryBox(xwrite);
+              SetNumPoints(GetNewFires(), xwrite);    // because this is an inward burning fire
+              SetInout(GetNewFires(), 2);
+              IncNewFires(1);
+            }
+          }
+        }
+      }
+      else if( xwrite > 2 ) {    // don't write very small "irrelevant" enclaves
+        AllocPerimeter1(GetNewFires(), xwrite + 1);
+        SwapTranz(GetNewFires(), xwrite);
+        BoundaryBox(xwrite);
+        SetNumPoints(GetNewFires(), xwrite);
+        SetInout(GetNewFires(), 2);
+        IncNewFires(1);
+        ctfire2 = GetNewFires();
+      }
+
+      if( chekct < numcross ) {
+        numchek = -1;
+        xwrite = 0;
+        do {
+          inside = GetCrossout(++numchek);    // find next loop, inward or outward
+        } while( inside );
+        endloop = numchek;
+        inside = 1;    // reset inside for all but possibly first fire
+        readfire = 1;
+      }
+    }
+
+    i = 0;
+    if( CheckPostFrontal(GETVAL) ) {
+      NewFires2 = GetNewFires();
+      if( (PostFires = new long[(NewFires2 - NewFires1 + 2)]) != NULL ) {
+        /*20200402 JWB:
+          Added this check for if there are fire rings.
+          Not sure if this is correct, but the code will seg-fault
+          if MergeFireRings() is called when there are no fire rings.
+        */
+        if( GetNumRings() ) { //20200402 Check added
+          PostFires[0] = *CurrentFire;
+          PostFires[1] = NextFire;
+          for( i = 2; i < (NewFires2 - NewFires1 + 2); i++ )
+            PostFires[i] = NewFires1 + i - 2;
+          post.MergeFireRings( PostFires, NewFires2 - NewFires1 + 2,
+                               intersect, interpoint, numcross, newnump );
+          delete[] PostFires;//GlobalFree(PostFires);
+        }                    //20200402 Check added
+      }
+    }
+
+    OldNumPoints = GetNumPoints(*CurrentFire);    // store old number of points for rediscretize
+    if( newnump > P2NumAlloc )
+      newnump = 0;
+    else if( newnump > 0 )
+      SetNumPoints(*CurrentFire, newnump);
+    SetNumPoints(NextFire, 0);
+    SetInout(NextFire, 0);
+    IncSkipFires(1);
+
+    if( GetNumAttacks() > 0 )
+      SetNewFireNumberForAttack(NextFire, *CurrentFire);
+    if( GetNumAirAttacks() > 0 )
+      SetNewFireNumberForAirAttack(NextFire, *CurrentFire);
+
+    NextFire = *CurrentFire;
+    if( newnump > 0 )
+      rediscretize(CurrentFire, true);    // only rediscretize outer fire
+    if( CheckPostFrontal(GETVAL) && NextFire != *CurrentFire )
+      SetNewFireNumber( NextFire, *CurrentFire,
+                        post.AccessReferenceRingNum(1, GETVAL) );
+  }
+
+  return true;
+} //Intersections::MergeFire
 
 
 void Intersections::BoundaryBox(long NumPoints)
@@ -3860,7 +3655,6 @@ void XUtilities::rediscretize( long* firenum, bool Reorder )
 
   double Xlo, Xhi, Ylo, Yhi;
   bool   FirstTime = true;
-  FreePerimeter1( *firenum );  //Free original perimeter array
   newnump *= 4;     //Dimension swap array to 4X original
   AllocSwap( newnump );
 
@@ -3875,7 +3669,7 @@ void XUtilities::rediscretize( long* firenum, bool Reorder )
   }
   else {
     if( Verbose >= CallLevel )
-      printf( "%*sfsxwutil:XUtilities::rediscretize:3a "
+      printf( "%*sfsxwutil:XUtilities::rediscretize:4a "
               "count=%ld count2=%ld\n",
               CallLevel, "", count, count2 );
 
@@ -3944,12 +3738,12 @@ void XUtilities::rediscretize( long* firenum, bool Reorder )
     }      //COORDINATES AS LAST POINT
 
     if( Verbose >= CallLevel )
-      printf( "%*sfsxwutil:XUtilities::rediscretize:3b "
+      printf( "%*sfsxwutil:XUtilities::rediscretize:4b "
               "count=%ld count2=%ld\n",
               CallLevel, "", count, count2 );
   }
   if( Verbose >= CallLevel )
-    printf( "%*sfsxwutil:XUtilities::rediscretize:4 numpts[%d]=%ld\n",
+    printf( "%*sfsxwutil:XUtilities::rediscretize:5 numpts[%d]=%ld\n",
             CallLevel, "", 0, GetNumPoints(0) );
 
   //If external fire && smaller than 4 points, can happen with precis. loss.
@@ -3962,13 +3756,13 @@ void XUtilities::rediscretize( long* firenum, bool Reorder )
     IncSkipFires( 1 );
   }
   if( Verbose >= CallLevel )
-    printf( "%*sfsxwutil:XUtilities::rediscretize:5 "
+    printf( "%*sfsxwutil:XUtilities::rediscretize:6 "
             "numpts[%d]=%ld count=%ld count2=%ld\n",
             CallLevel, "", 0, GetNumPoints(0), count, count2 );
 
   SetNumPoints( count, count2 );
   if( Verbose >= CallLevel )
-    printf( "%*sfsxwutil:XUtilities::rediscretize:6 numpts[%d]=%ld\n",
+    printf( "%*sfsxwutil:XUtilities::rediscretize:7 numpts[%d]=%ld\n",
             CallLevel, "", 0, GetNumPoints(0) );
 
   SetInout( count, firetype );
@@ -3989,7 +3783,7 @@ void XUtilities::rediscretize( long* firenum, bool Reorder )
   }
 
   if( Verbose >= CallLevel )
-    printf( "%*sfsxwutil:XUtilities::rediscretize:7 numpts[%d]=%ld\n",
+    printf( "%*sfsxwutil:XUtilities::rediscretize:8 numpts[%d]=%ld\n",
             CallLevel, "", 0, GetNumPoints(0) );
   CallLevel--;
 } //XUtilities::rediscretize
@@ -4015,10 +3809,19 @@ void XUtilities::SwapTranz(long writefire, long nump)
 */
 void XUtilities::tranz( long count, long nump )
 { //XUtilities::tranz
+  CallLevel++;
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxwutil:XUtilities::tranz:1\n",
+            CallLevel, "" );
+
   long   ct1;
   double xpt = 0, ypt = 0, ros = 0, fli = 0, rcx;
 
   if( nump == 0 ) {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxwutil:XUtilities::tranz:1a\n",
+              CallLevel, "" );
+
     nump = OldNumPoints = GetNumPoints( count );
     if( nump > 0 ) {
       if( ! SwapFirePerims(-1, count) ) {  //Backup method
@@ -4037,9 +3840,22 @@ void XUtilities::tranz( long count, long nump )
       }
     }
     else nump = -1;  //For debugging
+
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxwutil:XUtilities::tranz:1b\n",
+              CallLevel, "" );
   }
   else {
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxwutil:XUtilities::tranz:1c count=%ld nump=%ld\n",
+              CallLevel, "", count, nump );
+
     if( ! SwapFirePerims(count, -nump) ) {
+
+      if( Verbose >= CallLevel )
+        printf( "%*sfsxwutil:XUtilities::tranz:1c1\n",
+                CallLevel, "" );
+
       for( ct1 = 0; ct1 < nump; ct1++ ) {  //Backup method
         GetPerimeter2( ct1, &xpt, &ypt, &ros, &fli, &rcx );
         SetPerimeter1( count, ct1, xpt, ypt );
@@ -4047,5 +3863,14 @@ void XUtilities::tranz( long count, long nump )
         SetReact( count, ct1, rcx );
       }
     }
+
+    if( Verbose >= CallLevel )
+      printf( "%*sfsxwutil:XUtilities::tranz:1d\n",
+              CallLevel, "" );
   }
+
+  if( Verbose >= CallLevel )
+    printf( "%*sfsxwutil:XUtilities::tranz:2\n",
+            CallLevel, "" );
+  CallLevel--;
 } //XUtilities::tranz
