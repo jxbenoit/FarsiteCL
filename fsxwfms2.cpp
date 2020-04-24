@@ -15,6 +15,8 @@
 #include"globals.h"
 #include"portablestrings.h"
 
+using namespace std;
+
 //extern const double PI;
 static long WindLoc[5]={0, 0, 0, 0, 0};;
 
@@ -264,6 +266,7 @@ void FELocalSite::GetFireEnvironment( FireEnvironment2* env, double SimTime,
   double Radiate = 0, EquilMx;
   CallLevel++;
 
+//std::cerr << "AAA fsxwfms2:FELocalSite:GetFireEnvironment: 0\n";
   tenhour = hundhour = onehour = thousands = solrad = -1.0;
   if( ld.elev == -9999 ) {
     CallLevel--;
@@ -278,12 +281,14 @@ void FELocalSite::GetFireEnvironment( FireEnvironment2* env, double SimTime,
     printf( "%*sfsxwfms2:FELocalSite:GetFireEnvironment:2\n", CallLevel, "" );
 
   if( AtmosphereGridExists() ) {
+//std::cerr << "AAA fsxwfms2:FELocalSite:GetFireEnvironment: 2a\n";
     if( Verbose >= CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:GetFireEnvironment:2a\n",
               CallLevel, "" );
 
     AtmWindAdjustments( date, hours, &cloud );
 
+//std::cerr << "AAA fsxwfms2:FELocalSite:GetFireEnvironment: 2b\n";
     if( Verbose >= CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:GetFireEnvironment:2b\n",
               CallLevel, "" );
@@ -395,104 +400,116 @@ void FELocalSite::windadj( long date, double hours, long* cloud )
 
 //============================================================================
 void FELocalSite::AtmWindAdjustments( long curdate, double hours,
-
                                       long* cloud )
 { //FELocalSite::AtmWindAdjustments
-
   CallLevel++;
   long count = -1, ddate, month, day, hhour, xmonth, xday;
   short twspd, wndir, cloud_s;
   double MinTimeStep;
 
-
+//std::cerr << "AAA fsxwfms2:FELocalSite:AtmWindAdjustments: 1\n";
   if( Verbose > CallLevel )
     printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:1\n", CallLevel, "" );
   do {
-		count++;
-		month = GetAtmosphereGrid()->GetAtmMonth(count);
-		if (month == -1)					// hit end of ATMDATA
-			break;
-		day = GetAtmosphereGrid()->GetAtmDay(count);
-		ddate = day + GetJulianDays(month);
+    count++;
+    month = GetAtmosphereGrid()->GetAtmMonth(count);
+    if( month == -1 ) break;   // hit end of ATMDATA
+    day = GetAtmosphereGrid()->GetAtmDay(count);
+    ddate = day + GetJulianDays(month);
   } while( ddate != curdate );
+
   if( Verbose > CallLevel )
     printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2\n", CallLevel, "" );
 
-
-
-  if( month != -1 ) {						// if hit end of ATMDATA data
+  if( month != -1 ) {    // if hit end of ATMDATA data
     if( Verbose > CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2a\n",
               CallLevel, "" );
 
-
-
     hhour = GetAtmosphereGrid()->GetAtmHour(count);
-		xday = day;
+    xday = day;
+//std::cerr << "AAA fsxwfms2:FELocalSite:AtmWindAdjustments: 2b "
+//          << hours << " " << hhour << "\n";
     if( Verbose > CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2b\n",
               CallLevel, "" );
 
     while( hours >= hhour ) {
-			count++;
+      count++;
       if( Verbose > CallLevel )
         printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2b1\n",
                 CallLevel, "" );
 
-			xmonth = GetAtmosphereGrid()->GetAtmMonth(count);
+      xmonth = GetAtmosphereGrid()->GetAtmMonth(count);
       if( Verbose > CallLevel )
         printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2b2\n",
                 CallLevel, "" );
 
-			xday = GetAtmosphereGrid()->GetAtmDay(count);
+      xday = GetAtmosphereGrid()->GetAtmDay(count);
       if( Verbose > CallLevel )
         printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2b3\n",
                 CallLevel, "" );
 
-			hhour = GetAtmosphereGrid()->GetAtmHour(count);
+      hhour = GetAtmosphereGrid()->GetAtmHour(count);
+//std::cerr << "AAA fsxwfms2:FELocalSite:AtmWindAdjustments: 2b4 hhour="
+//          << hhour << "\n";
       if( Verbose > CallLevel )
         printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2b4 "
                 "hours=%lf hhour=%ld xday=%ld day=%ld xmonth=%ld month=%ld\n",
                 CallLevel, "", hours, hhour, xday, day, xmonth, month );
 
+      //20200405 JWB: Added following line. Otherwise, if at end of data,
+      //              this will be an infinite loop.
+      if( hhour < 0 ) {
+        cout << "fsxwfms2:FELocalSite:AtmWindAdjustments: ## "
+             << "Ran out of data in ATM file (hours="
+             << hours << ") ##" << endl;
+        break;
+      }
+
       if( xday > day || xmonth > month ||
           (month == 12 && day == 31 && xmonth == 1 && xday == 1) ) break;
-		}
+    } //End of while loop
+
     if( Verbose > CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2c\n",
               CallLevel, "" );
 
-		count--;
-		GetAtmosphereGrid()->GetAtmosphereValue(ATMWSPD, XLocation, YLocation,
-								count, &twspd);
+    count--;
+    GetAtmosphereGrid()->GetAtmosphereValue( ATMWSPD, XLocation, YLocation,
+                                               count, &twspd );
     if( Verbose > CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2d\n",
               CallLevel, "" );
 
-		GetAtmosphereGrid()->GetAtmosphereValue(ATMWDIR, XLocation, YLocation,
-								count, &wndir);
+    GetAtmosphereGrid()->GetAtmosphereValue( ATMWDIR, XLocation, YLocation,
+                                             count, &wndir );
     if( Verbose > CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2e\n",
               CallLevel, "" );
 
-		GetAtmosphereGrid()->GetAtmosphereValue(ATMCLOUD, XLocation,
-								YLocation, count, &cloud_s);
+    GetAtmosphereGrid()->GetAtmosphereValue( ATMCLOUD, XLocation,
+                                             YLocation, count, &cloud_s );
     if( Verbose > CallLevel )
       printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2f\n",
               CallLevel, "" );
 
-		*cloud = cloud_s;
-		twindspd = (double) twspd;
-		wwinddir = (double) wndir;
-		windreduct();
-	}
-  if( Verbose > CallLevel )
-    printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:3\n", CallLevel, "" );
+    *cloud = cloud_s;
+    twindspd = (double) twspd;
+    wwinddir = (double) wndir;
+    windreduct();
 
-  if( hours <= hhour ) {
-		MinTimeStep = (double) hhour - hours;
-		EventMinimumTimeStep(MinTimeStep);  	   // load into global variable
-	}
+    if( Verbose > CallLevel )
+      printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:2e\n",
+              CallLevel, "" );
+
+    //20200405 JWB: Moved the following 'if' inside the 'if(month != -1)'
+    //              block, because hhour is not initialized otherwise.
+    if( hours <= hhour ) {
+      MinTimeStep = (double) hhour - hours;
+      EventMinimumTimeStep(MinTimeStep);    // load into global variable
+    }
+  }
 
   if( Verbose > CallLevel )
     printf( "%*sfsxwfms2:FELocalSite:AtmWindAdjustments:4\n", CallLevel, "" );
@@ -503,70 +520,50 @@ void FELocalSite::AtmWindAdjustments( long curdate, double hours,
 
 void FELocalSite::windreduct()
 {
-	// FUNCTION TO REDUCE WINDSPEED (MI/HR) TO MIDFLAME OR VEGETATION HEIGHT
+  // FUNCTION TO REDUCE WINDSPEED (MI/HR) TO MIDFLAME OR VEGETATION HEIGHT
+  double ffactor, htfuel, htflame, m1, m2;
+  double canopyht = ld.height*3.2808;//GetDefaultCrownHeight()*3.28;     // convert to feet
 
-	double ffactor, htfuel, htflame, m1, m2;
-	double canopyht = ld.height*3.2808;//GetDefaultCrownHeight()*3.28;     // convert to feet
+  if (ld.cover <= 5 || canopyht == 0) {  // ld.cover==0
+    if (ld.fuel > 0) {
+      switch (ld.fuel) {
+        case 1: htfuel = 1.0; break;
+        case 2: htfuel = 1.0; break;
+        case 3: htfuel = 2.5; break;
+        case 4: htfuel = 6.0; break;
+        case 5: htfuel = 2.0; break;
+        case 6: htfuel = 2.5; break;
+        case 7: htfuel = 2.5; break;
+        case 8: htfuel = 0.2; break;
+        case 9: htfuel = 0.2; break;
+        case 10: htfuel = 1.0; break;
+        case 11: htfuel = 1.0; break;
+        case 12: htfuel = 2.3; break;
+        case 13: htfuel = 3.0; break;
+        default:
+          htfuel = GetFuelDepth(ld.fuel);  // retrieve from cust models
+          if (htfuel == 0.0) htfuel = 0.01;
+          break;
+      }
+    }
+    else
+      htfuel = 0.01;    // no fuel so height is essentially zero
+    htflame = htfuel;   // from Baughman and Albini 6th conf. FFM 1980
+    m1 = (1.0 + 0.36 * (htfuel / htflame)) /
+          (log((20.0 + 0.36 * htfuel) / (0.13 * htfuel)));
+    m2 = log(((htflame / htfuel + 0.36) / .13)) - 1.0;
+          mwindspd = m1 * m2 * twindspd;
+  }
+  else {
+    ffactor = ((double) ld.cover / 100.0) * 0.33333; // volume ratio of cone to cylinder
+    ffactor *= PI / 4.0;						// area ratio of circle to square
 
-	if (ld.cover <= 5 || canopyht == 0)	// ld.cover==0
-	{
-		if (ld.fuel > 0)
-		{
-			switch (ld.fuel)
-			{
-			case 1:
-				htfuel = 1.0; break;
-			case 2:
-				htfuel = 1.0; break;
-			case 3:
-				htfuel = 2.5; break;
-			case 4:
-				htfuel = 6.0; break;
-			case 5:
-				htfuel = 2.0; break;
-			case 6:
-				htfuel = 2.5; break;
-			case 7:
-				htfuel = 2.5; break;
-			case 8:
-				htfuel = 0.2; break;
-			case 9:
-				htfuel = 0.2; break;
-			case 10:
-				htfuel = 1.0; break;
-			case 11:
-				htfuel = 1.0; break;
-			case 12:
-				htfuel = 2.3; break;
-			case 13:
-				htfuel = 3.0; break;
-			default:
-				htfuel = GetFuelDepth(ld.fuel);  // retrieve from cust models
-				if (htfuel == 0.0)
-					htfuel = 0.01;
-				break;
-			}
-		}
-		else
-			htfuel = 0.01;		// no fuel so height is essentially zero
-		htflame = htfuel;		// from Baughman and Albini 6th conf. FFM 1980
-		m1 = (1.0 + 0.36 * (htfuel / htflame)) /
-			(log((20.0 + 0.36 * htfuel) / (0.13 * htfuel)));
-		m2 = log(((htflame / htfuel + 0.36) / .13)) - 1.0;
-		mwindspd = m1 * m2 * twindspd;
-	}
-	else
-	{
-		ffactor = ((double) ld.cover / 100.0) * 0.33333; // volume ratio of cone to cylinder
-		ffactor *= PI / 4.0;						// area ratio of circle to square
-
-		m1 = 0.555 /
-			(sqrt(canopyht * ffactor) * log((20.0 + 0.36 * canopyht) /
-											(0.13 * canopyht)));
-		if (m1 > 1.0)
-			m1 = 1.0;
-		mwindspd = m1 * twindspd;
-	}
+    m1 = 0.555 /
+        (sqrt(canopyht * ffactor) * log((20.0 + 0.36 * canopyht) /
+        (0.13 * canopyht)));
+    if (m1 > 1.0) m1 = 1.0;
+    mwindspd = m1 * twindspd;
+  }
 }
 
 
@@ -1331,9 +1328,6 @@ double FireEnvironment2::GetMx( double Time, long fuel, long elev, long slope,
 	mx[13] = Stations[sn].FMS[FuelSize][Stations[sn].FuelKey[FuelSize][fuel - 1] - 1]->Fms_Elev[ElevIndexN]->Fms_Slope[SlopeIndexN]->Fms_Aspect[AspIndex]->NextEq[CovIndexN];
 	mx[14] = Stations[sn].FMS[FuelSize][Stations[sn].FuelKey[FuelSize][fuel - 1] - 1]->Fms_Elev[ElevIndexN]->Fms_Slope[SlopeIndexN]->Fms_Aspect[AspIndexN]->NextEq[CovIndex];
 	mx[15] = Stations[sn].FMS[FuelSize][Stations[sn].FuelKey[FuelSize][fuel - 1] - 1]->Fms_Elev[ElevIndexN]->Fms_Slope[SlopeIndexN]->Fms_Aspect[AspIndexN]->NextEq[CovIndexN];
-//printf("AAA fsxwfms2:FireEnvironment2::GetMx 2 sn=%d FuelSize=%d fuel=%d ElevIndex=%d SlopeIndex=%d AspIndexN=%d CovIndex=%d CovIndexN=%d\n",sn,FuelSize,fuel,ElevIndex,SlopeIndex,AspIndexN,CovIndex,CovIndexN);
-
-//printf("AAA fsxwfms2:FireEnvironment2::GetMx 3 mx[2]=%f mx[3]=%f\n",mx[2],mx[3]);
 
 
 	// interpolate Cover
