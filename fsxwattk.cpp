@@ -880,7 +880,6 @@ bool Attack::IndirectAttack( AttackData* atk, double TimeStep )
     }
     vectorbarrier.BufferBarrier( 1.2 );
     if( attack->FireNumber > -1 ) {  //If not first time through
-      FreePerimeter1( attack->FireNumber );
     }
     else {
       attack->FireNumber = GetNewFires();
@@ -1243,9 +1242,7 @@ bool Attack::ParallelAttack( AttackData* atk, double TimeStep )
                                   attack->IndirectLine1[PointCount * 2 + 1] );
     }
     vectorbarrier.BufferBarrier( 1.2 );
-    if( attack->LineNumber > -1 )  //If not first time through
-      FreePerimeter1( attack->LineNumber );
-    else {
+    if( attack->LineNumber <= -1 ) {
       attack->LineNumber = GetNewFires();
       IncNewFires( 1 );
     }
@@ -1467,7 +1464,6 @@ void Attack::InsertPerimeterPoint( double newx, double newy, double nros,
     attack->IndirectLine2[i * 4 + 4] = nrcx;
   }
   numpts++;
-  FreePerimeter1( numfire );
   AllocPerimeter1( numfire, numpts + 1 );
   SetNumPoints( numfire, numpts );
   for( i = 0; i < numpts; i++ ) {
@@ -1721,8 +1717,6 @@ void Attack::BurnOut()
   }
 
   if( k < NewPoints ) {  //No
-    FreePerimeter1( GetNewFires() );
-
     return;
   }
   SetNumPoints( GetNewFires(), 2 * k );
