@@ -3,19 +3,26 @@
   ============================================================================
 */
 #include<string.h>
+#include<iostream>
 #include"globals.h"
 #include"fsxwignt.h"
 #include"portablestrings.h"
+#include"Perimeter.h"
 
 //============================================================================
-IgnitionFile::IgnitionFile() { }
+IgnitionFile::IgnitionFile() {
+std::cerr<<"AAA fsxwignt:IgnitionFile:IgnitionFile:1\n"; //AAA
+}
 
 //============================================================================
-IgnitionFile::~IgnitionFile() { }
+IgnitionFile::~IgnitionFile() {
+std::cerr<<"AAA fsxwignt:IgnitionFile:~IgnitionFile:1\n"; //AAA
+}
 
 //============================================================================
 bool IgnitionFile::ShapeInput() 
 { //IgnitionFile::ShapeInput
+std::cerr<<"AAA fsxwignt:IgnitionFile:ShapeInput:1\n"; //AAA
   SHPHandle hSHP;
   SHPObject* pSHP;
   int    nShapeType, nEntities;
@@ -25,6 +32,7 @@ bool IgnitionFile::ShapeInput()
   double MinBound[4], MaxBound[4];
 
   hSHP = SHPOpen( ifile, "rb" );
+std::cerr<<"AAA fsxwignt:IgnitionFile:ShapeInput:2\n"; //AAA
   if( hSHP == NULL ) return false;
 
   SHPGetInfo( hSHP, &nEntities, &nShapeType, MinBound, MaxBound );
@@ -163,7 +171,6 @@ bool IgnitionFile::ShapeInput()
       OldNumPts = GetNumPoints( NewFire );
       DensityControl( NewFire );
       NumPts = GetNumPoints( NewFire );
-      FreePerimeter1( NewFire );
       AllocPerimeter1( NewFire, NumPts + 1 );
       SwapFirePerims( NewFire, -NumPts );
     } while( NumPts > OldNumPts );
@@ -172,6 +179,7 @@ bool IgnitionFile::ShapeInput()
     SetReact( NewFire, NumPts, 0.0 );
   }
   SHPClose( hSHP );
+std::cerr<<"AAA fsxwignt:IgnitionFile:ShapeInput:3\n"; //AAA
 
   return true;
 } //IgnitionFile::ShapeInput
@@ -179,6 +187,7 @@ bool IgnitionFile::ShapeInput()
 //============================================================================
 bool IgnitionFile::GrassFile() 
 { //IgnitionFile::GrassFile
+std::cerr<<"AAA fsxwignt:IgnitionFile:GrassFile:1\n"; //AAA
   char   Head[30];
   long   count, NewFire, OldNumPts, NumPts;
   double xpt, ypt;
@@ -274,7 +283,6 @@ bool IgnitionFile::GrassFile()
       OldNumPts = GetNumPoints( NewFire );
       DensityControl( NewFire );
       NumPts = GetNumPoints( NewFire );
-      FreePerimeter1( NewFire );
       AllocPerimeter1( NewFire, NumPts + 1 );
       SwapFirePerims( NewFire, -NumPts );
     } while( NumPts > OldNumPts );
@@ -283,12 +291,14 @@ bool IgnitionFile::GrassFile()
     SetReact( NewFire, NumPts, 0.0 );
   }
 
+std::cerr<<"AAA fsxwignt:IgnitionFile:GrassFile:2\n"; //AAA
   return true;
 } //IgnitionFile::GrassFile
 
 //============================================================================
 bool IgnitionFile::ArcLine() 
 { //IgnitionFile::ArcLine
+std::cerr<<"AAA fsxwignt:IgnitionFile:ArcLine:1\n"; //AAA
   long   OldFires, NewFire, NumPts, OldNumPts;
   double xdiff, ydiff, midx, midy;
 
@@ -370,7 +380,6 @@ bool IgnitionFile::ArcLine()
         OldNumPts = GetNumPoints( NewFire );
         DensityControl( NewFire );
         NumPts = GetNumPoints( NewFire );
-        FreePerimeter1( NewFire );
         AllocPerimeter1( NewFire, NumPts + 1 );
         SwapFirePerims( NewFire, -NumPts );
       } while( NumPts > OldNumPts );
@@ -380,6 +389,7 @@ bool IgnitionFile::ArcLine()
   } while( strcmp(TestEnd, "END") );
   if( OldFires == GetNewFires() )
     printf( "Line Ignition Contains only One Point Ignition NOT Imported\n" );
+std::cerr<<"AAA fsxwignt:IgnitionFile:ArcLine:2\n"; //AAA
 
   return true;
 } //IgnitionFile::ArcLine
@@ -525,6 +535,7 @@ double ReadDoubleFromStr( char *s, char **p )
 */
 bool IgnitionFile::ArcPoly()
 { //IgnitionFile::ArcPoly
+std::cerr<<"AAA fsxwignt:IgnitionFile:ArcPoly:1\n"; //AAA
   CallLevel++;
 
   long OldFires, NumPts, NewFire, OldNumPts;
@@ -653,7 +664,6 @@ bool IgnitionFile::ArcPoly()
         OldNumPts = GetNumPoints( NewFire );
         DensityControl( NewFire );
         NumPts = GetNumPoints( NewFire );
-        FreePerimeter1( NewFire );
         AllocPerimeter1( NewFire, NumPts + 1 );
         SwapFirePerims( NewFire, -NumPts );
       } while( NumPts > OldNumPts );
@@ -679,6 +689,7 @@ bool IgnitionFile::ArcPoly()
             "Ignition NOT Imported ##\n" );
 
   CallLevel--;
+std::cerr<<"AAA fsxwignt:IgnitionFile:ArcPoly:2\n"; //AAA
 
   return true;
 } //IgnitionFile::ArcPoly
@@ -686,19 +697,26 @@ bool IgnitionFile::ArcPoly()
 //============================================================================
 bool IgnitionFile::ArcPoint() 
 { //IgnitionFile::ArcPoint
+std::cerr<<"AAA fsxwignt:IgnitionFile:ArcPoint:1\n"; //AAA
   CallLevel++;
 
   if( Verbose > CallLevel )
     printf( "%*sfsxwignt:IgnitionFile::ArcPoint:1\n", CallLevel, "" );
 
   while( ! feof(IFile) ) {
+    if( Verbose > CallLevel )
+      printf( "%*sfsxwignt:IgnitionFile::ArcPoint:1a\n", CallLevel, "" );
     fscanf( IFile, "%s", TestEnd );
     if( strcmp(TestEnd, "END") ) {
       fscanf( IFile, "%lf %lf", &CenterX, &CenterY );
       CenterX = ConvertUtmToEastingOffset( CenterX );
       CenterY = ConvertUtmToNorthingOffset( CenterY );
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwignt:IgnitionFile::ArcPoint:1a1\n", CallLevel, "" );
       //10 points, 11th is for bounding box.
       AllocPerimeter1( GetNewFires(), 11 );
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwignt:IgnitionFile::ArcPoint:1a2\n", CallLevel, "" );
       for( count = 0; count <= 9; count++ ) {
         angle = ( double (count) * (PI / 5.0) ) + PI / 2.0;
         xpt = CenterX + cos( angle );
@@ -710,9 +728,12 @@ bool IgnitionFile::ArcPoint()
       SetNumPoints( GetNewFires(), count );
       SetInout( GetNewFires(), 1 );
       IncNewFires( 1 );
-      BoundingBox( GetNewFires() - 1 );
       fscanf( IFile, "%s", TestEnd );
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwignt:IgnitionFile::ArcPoint:1a3\n", CallLevel, "" );
     }
+    if( Verbose > CallLevel )
+      printf( "%*sfsxwignt:IgnitionFile::ArcPoint:1b\n", CallLevel, "" );
   }
 
   if( Verbose > CallLevel )
@@ -720,18 +741,24 @@ bool IgnitionFile::ArcPoint()
 
   CallLevel--;
 
+std::cerr<<"AAA fsxwignt:IgnitionFile:ArcPoint:2\n"; //AAA
   return true;
 } //IgnitionFile::ArcPoint
 
 //============================================================================
-IgnitionCorrect::IgnitionCorrect() { }
+IgnitionCorrect::IgnitionCorrect() {
+std::cerr<<"AAA fsxwignt:IgnitionCorrect:IgnitionCorrect:1\n"; //AAA
+}
 
 //============================================================================
-IgnitionCorrect::~IgnitionCorrect() { }
+IgnitionCorrect::~IgnitionCorrect() {
+std::cerr<<"AAA fsxwignt:IgnitionCorrect:~IgnitionCorrect:1\n"; //AAA
+}
 
 //============================================================================
 void IgnitionCorrect::ReversePoints( long TYPE )
 { //IgnitionCorrect::ReversePoints
+std::cerr<<"AAA fsxwignt:IgnitionCorrect:ReversePoints:1\n"; //AAA
   long   j, AFire = GetNewFires() - 1;
   long   count, BFire = GetNewFires();
   double fxc, fyc, fxc2, fyc2, RosI, RosI2;
@@ -779,6 +806,7 @@ void IgnitionCorrect::ReversePoints( long TYPE )
       }
       break;
   }
+std::cerr<<"AAA fsxwignt:IgnitionCorrect:ReversePoints:2\n"; //AAA
 } //IgnitionCorrect::ReversePoints
 
 /*============================================================================
@@ -787,11 +815,13 @@ void IgnitionCorrect::ReversePoints( long TYPE )
 */
 double IgnitionCorrect::arp()
 { //IgnitionCorrect::arp
+std::cerr<<"AAA fsxwignt:IgnitionCorrect:arp:1\n"; //AAA
   long   count, count1 = 0, FireNum = GetNewFires() - 1, numx;
   double xpt1, ypt1, xpt2, ypt2, aangle, zangle, DiffAngle;
   double newarea, area = 0.0;
 
   numx = GetNumPoints( FireNum );
+std::cerr<<"AAA fsxwignt:IgnitionCorrect:arp:2\n"; //AAA
   if( numx < 3 ) return area;
 
   startx = GetPerimeter1Value( FireNum, 0, 0 );
@@ -826,6 +856,7 @@ double IgnitionCorrect::arp()
     xpt1 = xpt2;
     ypt1 = ypt2;
   }
+std::cerr<<"AAA fsxwignt:IgnitionCorrect:arp:3\n"; //AAA
 
   return area;
 } //IgnitionCorrect::arp
@@ -833,10 +864,10 @@ double IgnitionCorrect::arp()
 //============================================================================
 void StandardizePolygon::RemoveIdenticalPoints( long NumFire )
 { //StandardizePolygon::RemoveIdenticalPoints
+std::cerr<<"AAA fsxwignt:StandardizePolygon:RemoveIdenticalPoints:1\n"; //AAA
   long   i, j, k, NumPts;
   double xpt, ypt, xptn, yptn, xn, yn;
   double xdiff, ydiff, dist, offset;
-  double* perimeter1;
 
   NumPts = GetNumPoints( NumFire );
   for( i = 0; i < NumPts; i++ ) {
@@ -856,10 +887,9 @@ void StandardizePolygon::RemoveIdenticalPoints( long NumFire )
         ydiff = yptn - yn;
         dist = sqrt( pow2(xdiff) + pow2(ydiff) );
         if( dist < 1e-9 ) {
-          perimeter1 = GetPerimeter1Address( NumFire, 0 );
-          memcpy( &perimeter1[j * NUMDATA],
-                  &perimeter1[(j + 1) * NUMDATA],
-                  (NumPts - j) * NUMDATA * sizeof(double) );
+          //20200410 JWB: Replaced use of GetPerimeter1Address(NumFire,0) &
+          //              memcpy() here with Perimeter::DeletePoint() here.
+          DeletePoint( NumFire, j );
           NumPts--;
         }
         else {
@@ -873,6 +903,7 @@ void StandardizePolygon::RemoveIdenticalPoints( long NumFire )
     }
   }
   if( NumPts < GetNumPoints(NumFire) ) SetNumPoints( NumFire, NumPts );
+std::cerr<<"AAA fsxwignt:StandardizePolygon:RemoveIdenticalPoints:2\n"; //AAA
 } //StandardizePolygon::RemoveIdenticalPoints
 
 /*============================================================================
@@ -885,6 +916,7 @@ void StandardizePolygon::RemoveIdenticalPoints( long NumFire )
 */
 void IgnitionFile::SelectFileInputCmdL( int type )
 { //IgnitionFile::SelectFileInputCmdL
+std::cerr<<"AAA fsxwignt:IgnitionFile:SelectFileInputCmdL:1\n"; //AAA
   CallLevel++;
 
   if( Verbose > CallLevel )
@@ -914,6 +946,7 @@ void IgnitionFile::SelectFileInputCmdL( int type )
   if( Verbose > CallLevel )
     printf( "%*sIgnitionFile::SelectFileInputCmdL:2\n", CallLevel, "" );
 
-
   CallLevel--;
+
+std::cerr<<"AAA fsxwignt:IgnitionFile:SelectFileInputCmdL:2\n"; //AAA
 } //IgnitionFile::SelectFileInputCmdL
