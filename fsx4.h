@@ -18,7 +18,6 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
-#include<malloc.h>
 #include"newfms.h"
 #include"fsxlandt.h"
 #include"fsxpfront.h"

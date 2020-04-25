@@ -5,7 +5,6 @@
   Mark A. Finney, Systems for Environmental Management
   See LICENSE.TXT file for license information.
 */
-#include<malloc.h>
 #include<stdio.h>
 #include<string.h>
 #include"fsxwattk.h"
