@@ -325,7 +325,6 @@ void Rasterize::raster()
 	if (ExNumPts > 0)
 	{
 		ExNumPts = 0;
-		FreePerimeter1(count);
 		SetNumPoints(count, 0);
 	}
 }
