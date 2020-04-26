@@ -1,9 +1,16 @@
-/*batch.cpp
+/*============================================================================
+  main.cpp
+
+  Entry point for FarsiteCL executable.
+  RFL version  
+  Based on Version 4.1.0 (12/21/2004) by Mark Finney.
+
   See LICENSE.TXT file for license information.
+  ============================================================================
 */
 #include<iostream>
 #include"globals.h"
-#include"farsite4.h"
+#include"Farsite.h"
 #include"portablestrings.h"
 
 using namespace std;
@@ -30,7 +37,7 @@ int main( int argc, char* argv[] )
   }
 
   if( Verbose > CallLevel )
-    printf( "%*sbatch:main:1 Verbosity set to %d\n", CallLevel, "", Verbose );
+    printf( "%*smain:main:1 Verbosity set to %d\n", CallLevel, "", Verbose );
 
   if( ! Exists(InputSettingsFilename) ) {
     printf( "## Can't access %s! ##\n", InputSettingsFilename );
@@ -41,26 +48,26 @@ int main( int argc, char* argv[] )
   char CurrDir[MAX_CUR_DIR_STR_LEN];
   GetCurDir( CurrDir, MAX_CUR_DIR_STR_LEN );
   if( Verbose > CallLevel )
-    printf( "%*sbatch:main:2 CurrDir = %s\n", CallLevel, "", CurrDir );
-  if( CurrDir == NULL ) {
+    printf( "%*smain:main:2 CurrDir = %s\n", CallLevel, "", CurrDir );
+  if( CurrDir[0] == '\0' ) {
     printf( "## Can't get current working directory! ##\n" );
 
     return 2;
   }
 
-  TFarsiteInterface farsite = TFarsiteInterface( CurrDir );
+  Farsite F( CurrDir );
 
   if( Verbose > CallLevel )
-    printf( "%*sbatch:main:3\n", CallLevel, "" );
+    printf( "%*smain:main:3\n", CallLevel, "" );
 
-  if( farsite.SetInputsFromFile( InputSettingsFilename ) ) {
+  if( F.SetInputsFromFile( InputSettingsFilename ) ) {
     if( Verbose > CallLevel )
-      printf( "%*sbatch:main:4 Starting main procedure....\n", CallLevel, "" );
+      printf( "%*smain:main:4 Starting main procedure....\n", CallLevel, "" );
 
-    farsite.FlatOpenProject();
+    F.FlatOpenProject();
 
     if( Verbose > CallLevel )
-      printf( "%*sbatch:main:5 Done\n", CallLevel, "" );
+      printf( "%*smain:main:5 Done\n", CallLevel, "" );
   }
   else {
     printf( "Bailing out, due to invalid settings....\n" );
