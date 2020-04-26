@@ -63,7 +63,6 @@ void FarInputs::ResetData()
 void FarInputs::InitializeLandscapeFile()
 { //FarInputs::InitializeLandscapeFile
   CallLevel++;
-
   if( Verbose > CallLevel )
     printf( "%*sfsxwinpt:FarInputs::InitializeLandscapeFile:1\n",
             CallLevel, "" );
@@ -1069,6 +1068,11 @@ bool FarInputs::LoadConversionFile()
 //============================================================================
 bool FarInputs::OpenVersion1ProjectFile()
 { //FarInputs::OpenVersion1ProjectFile
+  CallLevel++;
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwinpt:FarInputs::OpenVersion1ProjectFile:1\n",
+            CallLevel, "" );
+
   char  RevCopy[256];
   char  pathdiv[] = "/";              //Search for path
   char  header[2];
@@ -1156,6 +1160,11 @@ bool FarInputs::OpenVersion1ProjectFile()
         SetLandFileName( "" );
         memset( ProjectFile, 0x0, sizeof(ProjectFile) );
         memset( LandscapeFile, 0x0, sizeof(LandscapeFile) );
+
+        if( Verbose > CallLevel )
+          printf( "%*sfsxwinpt:FarInputs::OpenVersion1ProjectFile:1a\n",
+                  CallLevel, "" );
+        CallLevel--;
 
         return false;
       }
@@ -1286,14 +1295,30 @@ bool FarInputs::OpenVersion1ProjectFile()
 
       fclose( pf );
 
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwinpt:FarInputs::OpenVersion1ProjectFile:1b\n",
+                CallLevel, "" );
+      CallLevel--;
+
       return false;
     }
     fclose( pf );
   }
   else {
     printf( " ProjectFile  !! UNABLE to open file !!:\n" );
+
+    if( Verbose > CallLevel )
+      printf( "%*sfsxwinpt:FarInputs::OpenVersion1ProjectFile:1c\n",
+              CallLevel, "" );
+    CallLevel--;
+
     return false;
   }
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwinpt:FarInputs::OpenVersion1ProjectFile:2\n",
+            CallLevel, "" );
+  CallLevel--;
 
   return true;
 } //FarInputs::OpenVersion1ProjectFile
@@ -1311,6 +1336,11 @@ bool FarInputs::OpenVersion2ProjectFile()
   FILE*  pf;
   COLORREF colr;
   long   HEAD;
+
+  CallLevel++;
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1\n",
+            CallLevel, "" );
 
   GetCurDir( CurrentDirectory, MAX_CUR_DIR_STR_LEN );
   strcat( CurrentDirectory, pathdiv );
@@ -1400,6 +1430,11 @@ bool FarInputs::OpenVersion2ProjectFile()
         SetLandFileName( "" );
         memset( ProjectFile, 0x0, sizeof(ProjectFile) );
         memset( LandscapeFile, 0x0, sizeof(LandscapeFile) );
+
+        if( Verbose > CallLevel )
+          printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1a\n",
+                  CallLevel, "" );
+        CallLevel--;
 
         return false;
       }
@@ -1572,14 +1607,30 @@ bool FarInputs::OpenVersion2ProjectFile()
 
       fclose( pf );
 
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1b\n",
+                CallLevel, "" );
+      CallLevel--;
+
       return false;
     }
     fclose( pf );
   }
   else {
     printf( " ProjectFile  !! UNABLE to open file !!:\n" );
+
+    if( Verbose > CallLevel )
+      printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1c\n",
+              CallLevel, "" );
+    CallLevel--;
+
     return false;
   }
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:2\n",
+            CallLevel, "" );
+  CallLevel--;
 
   return true;
 } //FarInputs::OpenVersion2ProjectFile
@@ -1597,6 +1648,11 @@ bool FarInputs::OpenVersion4ProjectFile()
   double north, south, east, west, val[7];
   FILE* pf;
   COLORREF colr;
+
+  CallLevel++;
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1\n",
+            CallLevel, "" );
 
   getNameFromFile( ProjectFile, Name, 255 );
 
@@ -1703,6 +1759,11 @@ bool FarInputs::OpenVersion4ProjectFile()
         SetLandFileName( "" );
         memset( ProjectFile, 0x0, sizeof(ProjectFile) );
         memset( LandscapeFile, 0x0, sizeof(LandscapeFile) );
+
+        if( Verbose > CallLevel )
+          printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1a\n",
+            CallLevel, "" );
+        CallLevel--;
 
         return false;
       }
@@ -2122,14 +2183,30 @@ bool FarInputs::OpenVersion4ProjectFile()
 
       fclose( pf );
 
+      if( Verbose > CallLevel )
+        printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1b\n",
+          CallLevel, "" );
+      CallLevel--;
+
       return false;
     }
     fclose( pf );
   }
   else {
     printf( " ProjectFile  !! UNABLE to open file !!:\n" );
+
+    if( Verbose > CallLevel )
+      printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:1c\n",
+        CallLevel, "" );
+    CallLevel--;
+
     return false;
   }
+
+  if( Verbose > CallLevel )
+    printf( "%*sfsxwinpt:FarInputs::OpenVersion2ProjectFile:2\n",
+      CallLevel, "" );
+  CallLevel--;
 
   return true;
 } //FarInputs::OpenVersion4ProjectFile
