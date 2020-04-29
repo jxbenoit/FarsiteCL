@@ -9,9 +9,9 @@
   ============================================================================
 */
 #include<iostream>
+#include<string.h>
 #include"globals.h"
 #include"Farsite.h"
-#include"portablestrings.h"
 
 using namespace std;
 
@@ -36,45 +36,43 @@ int main( int argc, char* argv[] )
     return 0;
   }
 
-  if( Verbose > CallLevel )
-    printf( "%*smain:main:1 Verbosity set to %d\n", CallLevel, "", Verbose );
+  VOut.SetVerbosity( Verbose ); //Set up verbose output stream (global obj)
+
+  if( VOut.CanPrint() )
+    VOut << "main:main:1 Verbosity set to " << Verbose << "\n";
 
   if( ! Exists(InputSettingsFilename) ) {
-    printf( "## Can't access %s! ##\n", InputSettingsFilename );
+    cerr << "## Can't access " << InputSettingsFilename << "! ##" << endl;
 
     return 1;
   }
 
   char CurrDir[MAX_CUR_DIR_STR_LEN];
   GetCurDir( CurrDir, MAX_CUR_DIR_STR_LEN );
-  if( Verbose > CallLevel )
-    printf( "%*smain:main:2 CurrDir = %s\n", CallLevel, "", CurrDir );
+
+  if( VOut.CanPrint() ) VOut << "main:main:2 CurrDir = " << CurrDir << "\n";
+
   if( CurrDir[0] == '\0' ) {
-    printf( "## Can't get current working directory! ##\n" );
+    cerr << "## Can't get current working directory! ##" << endl;
 
     return 2;
   }
 
   Farsite F( CurrDir );
 
-  if( Verbose > CallLevel )
-    printf( "%*smain:main:3\n", CallLevel, "" );
+  if( VOut.CanPrint() ) VOut << "main:main:3\n";
 
   if( F.SetInputsFromFile( InputSettingsFilename ) ) {
-    if( Verbose > CallLevel )
-      printf( "%*smain:main:4 Starting main procedure....\n", CallLevel, "" );
+  if( VOut.CanPrint() ) VOut << "main:main:4 Starting main procedure....\n";
 
     F.FlatOpenProject();
 
-    if( Verbose > CallLevel )
-      printf( "%*smain:main:5 Done\n", CallLevel, "" );
+    if( VOut.CanPrint() ) VOut << "main:main:5 Done\n";
   }
   else {
-    printf( "Bailing out, due to invalid settings....\n" );
+    cerr << "## Bailing out, due to invalid settings.... ##" << endl;
     return 3;
   }
-
-  fflush( stdout );
 
   delete [] InputSettingsFilename;
 
@@ -111,7 +109,7 @@ bool ProcessArgs( int argc, char* argv[], char **Filename )
       //(Remember to check for invalid number values for verbose level here).
       long v = atol( p );
       if( v >= 0 && v <= 13 ) Verbose = (int) v;
-      else printf( "## Bad setting for Verbose argument ##\n" );
+      else cerr << "## Bad setting for Verbose argument ##\n";
       bVerbose = false;
     }
     else {           //Treat as a input settings filename

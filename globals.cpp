@@ -38,6 +38,7 @@ const char DIR_DELIMITER = '/';
 
 int Verbose = 0;
 int CallLevel = 0;
+VerboseOut VOut;  //Verbose output stream
 
 /*============================================================================
   Exists

@@ -3,10 +3,10 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 #include<math.h>  //for acos();
+#include<string>
+#include"VerboseOut.h"
 
-//Externs
-extern int Verbose;
-extern int CallLevel;
+using namespace std;
 
 //Constants & Defines
 #define      VERSION                 1.0
@@ -14,6 +14,11 @@ const int    FILE_MODE_READ      =   1;  //For SetFileMode()
 const int    FILE_MODE_WRITE     =   2;  //For SetFileMode()
 const int    MAX_CUR_DIR_STR_LEN = 256;  //For GetCurDir()
 const double PI                  = acos( -1.0 );
+
+//Globals
+extern int Verbose;
+extern int CallLevel;
+extern VerboseOut VOut;  //Verbose output stream
 
 //Max & Min functions
 template <class T> const T &max( const T &a, const T &b )
