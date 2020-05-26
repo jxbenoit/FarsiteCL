@@ -130,19 +130,8 @@ bool IsWritable( char *Filename )
 */
 char* GetCurDir( char *Buf, int MaxLen )
 { //GetCurDir
-  CallLevel++;
-
-  if( Verbose > CallLevel )
-    printf( "%*sglobals:GetCurDir:1\n", CallLevel, "" );
-
-  if( ! getcwd(Buf, MaxLen - 1) ) {
-    if( Verbose > CallLevel )
-      printf( "%*sglobals:GetCurDir:1a\n", CallLevel, "" );
+  if( ! getcwd(Buf, MaxLen - 1) )
     return NULL;  //Dir string is too long
-  }
-
-  if( Verbose > CallLevel )
-    printf( "%*sglobals:GetCurDir:2\n", CallLevel, "" );
 
   //Append an appropriate trailing directory delimiter ('\' or '/').
   int len = strlen( Buf );
@@ -152,21 +141,14 @@ char* GetCurDir( char *Buf, int MaxLen )
     int i = 0;
     while( Buf[i] != 0 && Buf[i] != '/' && Buf[i] != '\\' ) i++;
 
-    if( Buf[i] == 0 ) {
-      if( Verbose > CallLevel )
-        printf( "%*sglobals:GetCurDir:2a\n", CallLevel, "" );
-      CallLevel--;
+    if( Buf[i] == 0 )
       return NULL; //Can't determine dir delimiter
-    }
 
     Buf[ len ] = Buf[i];
   }
 
   Buf[ len + 1 ] = 0;
 
-  if( Verbose > CallLevel )
-    printf( "%*sglobals:GetCurDir:3\n", CallLevel, "" );
-  CallLevel--;
   return Buf;
 } //GetCurDir
 
